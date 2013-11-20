@@ -14,15 +14,21 @@ au FileType javascript set dictionary+=$HOME/.vim/dict/node/dict/node.dict
 set background=dark
 color mango
 
-highlight colorcolumn cterm=NONE ctermbg=234
-let &colorcolumn=join(range(81,999),",")
+"highlight colorcolumn term=bold cterm=bold ctermbg=none
+"let &colorcolumn=join(range(81,999),",")
+":hi LineTooLong cterm=bold ctermbg=red guibg=LightYellow
+hi link LineTooLong ColorColumn
+:match LineTooLong /\%>80v.\+/
+
+hi link ExtraWhitespace ColorColumn
+:2match ExtraWhitespace /\s\+$\|^\t*\zs \+/
+set list listchars=tab:\ \ ,trail:·
 
 set et!
 set cursorline cursorcolumn
 set ts=4 sts=0 sw=4 noexpandtab
 set number ruler
 set autoindent
-set list listchars=tab:\ \ ,trail:·
 set encoding=utf-8
 set mouse=a
 
