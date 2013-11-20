@@ -18,10 +18,11 @@ color mango
 "let &colorcolumn=join(range(81,999),",")
 ":hi LineTooLong cterm=bold ctermbg=red guibg=LightYellow
 hi link LineTooLong ColorColumn
-:call matchadd('LineTooLong', '\%>80v.\+')
+call matchadd('LineTooLong', '\%>80v.\+')
+"syn match LineTooLong '\%>80v.\+'
 
 hi link ExtraWhitespace ColorColumn
-:call matchadd('ExtraWhitespace', '\s\+$\|^\t*\zs \+')
+call matchadd('ExtraWhitespace', '\s\+$\|^\t*\zs \+')
 set list listchars=tab:\ \ ,trail:·
 
 set et!
