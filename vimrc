@@ -1,5 +1,9 @@
 execute pathogen#infect()
 
+set backup
+set backupdir=/tmp
+set dir=/tmp
+
 syntax enable
 syntax on
 
