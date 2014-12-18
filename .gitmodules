@@ -46,3 +46,6 @@
 [submodule "bundle/php-syntax"]
 	path = bundle/php-syntax
 	url = https://github.com/vim-scripts/php.vim--Garvin.git
+[submodule "bundle/gnupg"]
+	path = bundle/gnupg
+	url = https://github.com/jamessan/vim-gnupg.git
