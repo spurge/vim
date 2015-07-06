@@ -49,3 +49,9 @@
 [submodule "bundle/gnupg"]
 	path = bundle/gnupg
 	url = https://github.com/jamessan/vim-gnupg.git
+[submodule "bundle/pep8"]
+	path = bundle/pep8
+	url = https://github.com/vim-scripts/pep8.git
+[submodule "pyflakes-pathogen"]
+	path = pyflakes-pathogen
+	url = https://github.com/mitechie/pyflakes-pathogen.git

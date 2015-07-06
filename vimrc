@@ -10,6 +10,13 @@ syntax on
 filetype plugin indent on
 
 au FileType javascript set dictionary+=$HOME/.vim/dict/node/dict/node.dict
+au Filetype python set omnifunc=pythoncomplete#Complete
+
+let g:pyflakes_use_quickfix=0
+let g:pep8_map='<Leader>8'
+let g:SuperTabDefaultCompletionType='context'
+set completeopt=menuone,longest,preview
+let g:syntastic_always_populate_loc_list=1
 
 set background=dark
 color mango
@@ -32,8 +39,6 @@ set number ruler
 set autoindent
 set encoding=utf-8
 set mouse=a
-
-let g:syntastic_always_populate_loc_list=1
 
 nmap ,n <Esc>:tabn<CR>
 nmap ,p <Esc>:tabp<CR>
