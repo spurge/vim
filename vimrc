@@ -19,7 +19,7 @@ set completeopt=menuone,longest,preview
 let g:syntastic_always_populate_loc_list=1
 
 set background=dark
-color mango
+color gruvbox
 
 "highlight colorcolumn term=bold cterm=bold ctermbg=none
 "let &colorcolumn=join(range(81,999),",")
