@@ -12,7 +12,7 @@ install:
 	ln -sf .vim/vimrc ../.vimrc
 	# Pathogen
 	curl -Sso autoload/pathogen.vim \
-		https://raw.github.com/tpope/vim-pathogen/master/autoload/pathogen.vim
+		https://raw.githubusercontent.com/tpope/vim-pathogen/master/autoload/pathogen.vim
 
 update:
 	git pull
