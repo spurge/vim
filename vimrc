@@ -20,6 +20,7 @@ let g:syntastic_always_populate_loc_list=1
 
 set background=dark
 color gruvbox
+hi Normal ctermbg=none
 
 "highlight colorcolumn term=bold cterm=bold ctermbg=none
 "let &colorcolumn=join(range(81,999),",")
