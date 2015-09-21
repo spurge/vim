@@ -61,3 +61,12 @@
 [submodule "bundle/rainbow_paranthesis"]
 	path = bundle/rainbow_paranthesis
 	url = https://github.com/kien/rainbow_parentheses.vim.git
+[submodule "bundle/airline"]
+	path = bundle/airline
+	url = https://github.com/bling/vim-airline.git
+[submodule "bundle/indentline"]
+	path = bundle/indentline
+	url = https://github.com/Yggdroot/indentLine.git
+[submodule "bundle/easymotion"]
+	path = bundle/easymotion
+	url = https://github.com/easymotion/vim-easymotion.git

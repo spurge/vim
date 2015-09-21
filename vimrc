@@ -31,7 +31,7 @@ call matchadd('LineTooLong', '\%>80v.\+')
 
 hi link ExtraWhitespace ColorColumn
 call matchadd('ExtraWhitespace', '\s\+$\|^\t*\zs \+')
-set list listchars=tab:\ \ ,trail:·
+set list lcs=tab:\|\ ,trail:·
 
 set et!
 set cursorline cursorcolumn
