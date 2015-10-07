@@ -11,6 +11,7 @@ install:
 	# Linking vimrc
 	ln -sf .vim/vimrc ../.vimrc
 	# Pathogen
+	mkdir -p autoload
 	curl -Sso autoload/pathogen.vim \
 		https://raw.githubusercontent.com/tpope/vim-pathogen/master/autoload/pathogen.vim
 
