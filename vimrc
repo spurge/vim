@@ -17,6 +17,12 @@ let g:pep8_map='<Leader>8'
 let g:SuperTabDefaultCompletionType='context'
 set completeopt=menuone,longest,preview
 let g:syntastic_always_populate_loc_list=1
+"let g:jsx_ext_required=0
+"let g:jshintprg="jsxhint"
+let g:syntastic_javascript_checkers=['eslint']
+let g:syntastic_javascript_eslint_exec='eslint'
+let g:syntastic_javascript_eslint_args='-f compact'
+"let g:syntastic_debug=1
 
 set background=dark
 color gruvbox
@@ -41,6 +47,10 @@ set autoindent
 set encoding=utf-8
 set mouse=a
 
+" Tabs
 nmap ,n <Esc>:tabn<CR>
 nmap ,p <Esc>:tabp<CR>
 nmap ,t <Esc>:tabnew<CR>
+
+" Neovim's terminal
+tnoremap <Esc> <C-\><C-n>
