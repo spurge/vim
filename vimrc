@@ -51,6 +51,7 @@ set mouse=a
 nmap ,n <Esc>:tabn<CR>
 nmap ,p <Esc>:tabp<CR>
 nmap ,t <Esc>:tabnew<CR>
+nmap <Leader><Tab> <Esc>:tabn<CR>
 
 " Neovim's terminal
-tnoremap <Esc> <C-\><C-n>
+tnoremap <Leader>e <C-\><C-n>
