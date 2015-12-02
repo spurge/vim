@@ -9,9 +9,10 @@ syntax on
 
 filetype plugin indent on
 
-au FileType javascript set dictionary+=$HOME/.vim/dict/node/dict/node.dict
+" Filetypes & Completion & Syntax & Lint
+au Filetype javascript set dictionary+=$HOME/.vim/dict/node/dict/node.dict
 au Filetype python set omnifunc=pythoncomplete#Complete
-
+au BufNewFile,BufRead *.xaml setf xml
 let g:pyflakes_use_quickfix=0
 let g:pep8_map='<Leader>8'
 let g:SuperTabDefaultCompletionType='context'
@@ -24,19 +25,15 @@ let g:syntastic_javascript_eslint_exec='eslint'
 let g:syntastic_javascript_eslint_args='-f compact'
 "let g:syntastic_debug=1
 
-set background=dark
+set background=light
 color gruvbox
 hi Normal ctermbg=none
 
-"highlight colorcolumn term=bold cterm=bold ctermbg=none
-"let &colorcolumn=join(range(81,999),",")
-":hi LineTooLong cterm=bold ctermbg=red guibg=LightYellow
 hi link LineTooLong ColorColumn
 call matchadd('LineTooLong', '\%>80v.\+')
-"syn match LineTooLong '\%>80v.\+'
 
 hi link ExtraWhitespace ColorColumn
-call matchadd('ExtraWhitespace', '\s\+$\|^\t*\zs \+')
+call matchadd('ExtraWhitespace', '\s\+$\| \+\ze\t\|[^\t]\zs\t\+')
 set list lcs=tab:\|\ ,trail:·
 
 set et!

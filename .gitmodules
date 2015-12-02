@@ -79,3 +79,6 @@
 [submodule "bundle/floobits"]
 	path = bundle/floobits
 	url = https://github.com/floobits/floobits-neovim.git
+[submodule "bundle/dotnet-complete"]
+	path = bundle/dotnet-complete
+	url = https://github.com/yuratomo/dotnet-complete.git
