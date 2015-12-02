@@ -82,3 +82,12 @@
 [submodule "bundle/dotnet-complete"]
 	path = bundle/dotnet-complete
 	url = https://github.com/yuratomo/dotnet-complete.git
+[submodule "bundle/unite"]
+	path = bundle/unite
+	url = https://github.com/Shougo/unite.vim.git
+[submodule "bundle/dispatch"]
+	path = bundle/dispatch
+	url = https://github.com/tpope/vim-dispatch.git
+[submodule "bundle/omnisharp"]
+	path = bundle/omnisharp
+	url = https://github.com/OmniSharp/omnisharp-vim.git
