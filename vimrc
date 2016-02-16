@@ -25,7 +25,7 @@ let g:syntastic_javascript_eslint_exec='eslint'
 let g:syntastic_javascript_eslint_args='-f compact'
 "let g:syntastic_debug=1
 
-set background=light
+set background=dark
 color gruvbox
 hi Normal ctermbg=none
 

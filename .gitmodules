@@ -91,3 +91,6 @@
 [submodule "bundle/omnisharp"]
 	path = bundle/omnisharp
 	url = https://github.com/OmniSharp/omnisharp-vim.git
+[submodule "bundle/align"]
+	path = bundle/align
+	url = https://github.com/vim-scripts/align
