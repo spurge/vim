@@ -97,3 +97,6 @@
 [submodule "bundle/neomake"]
 	path = bundle/neomake
 	url = https://github.com/benekastah/neomake
+[submodule "bundle/align"]
+	path = bundle/align
+	url = https://github.com/vim-scripts/align
