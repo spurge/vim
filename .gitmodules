@@ -91,3 +91,9 @@
 [submodule "bundle/omnisharp"]
 	path = bundle/omnisharp
 	url = https://github.com/OmniSharp/omnisharp-vim.git
+[submodule "bundle/vimproc"]
+	path = bundle/vimproc
+	url = https://github.com/Shougo/vimproc.vim.git
+[submodule "bundle/neomake"]
+	path = bundle/neomake
+	url = https://github.com/benekastah/neomake
