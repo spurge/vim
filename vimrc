@@ -62,3 +62,7 @@ nmap <Leader>n <Esc>:NERDTreeToggle<CR>
 
 " Neovim's terminal
 tnoremap <Leader>e <C-\><C-n>
+
+" Tagbar
+let g:tagbar_usearrows=1
+nnoremap <Leader>l <Esc>:TagbarToggle<CR>

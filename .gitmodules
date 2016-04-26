@@ -4,9 +4,6 @@
 [submodule "bundle/tabular"]
 	path = bundle/tabular
 	url = https://github.com/godlygeek/tabular.git
-[submodule "bundle/jshint"]
-	path = bundle/jshint
-	url = https://github.com/walm/jshint.vim.git
 [submodule "bundle/javascript-syntax"]
 	path = bundle/javascript-syntax
 	url = https://github.com/jelera/vim-javascript-syntax.git
@@ -103,3 +100,6 @@
 [submodule "bundle/pug"]
 	path = bundle/pug
 	url = https://github.com/digitaltoad/vim-pug.git
+[submodule "bundle/tagbar"]
+	path = bundle/tagbar
+	url = https://github.com/majutsushi/tagbar.git
