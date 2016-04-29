@@ -20,12 +20,16 @@ set completeopt=menuone,longest,preview
 let g:syntastic_always_populate_loc_list=1
 "let g:jsx_ext_required=0
 "let g:jshintprg="jsxhint"
-let g:neomake_javascript_enabled_makers=['eslint']
-"let g:syntastic_javascript_checkers=['eslint']
-"let g:syntastic_javascript_eslint_exec='eslint'
-"let g:syntastic_javascript_eslint_args='-f compact'
+"let g:neomake_javascript_enabled_makers=['eslint']
+let g:syntastic_javascript_checkers=['eslint']
+let g:syntastic_javascript_eslint_exec='eslint'
+let g:syntastic_javascript_eslint_args='-f compact'
 "let g:syntastic_debug=1
 "let g:syntastic_cursor_column=0
+let g:js_context_colors_enabled=1
+autocmd BufReadPre *.js let b:javascript_lib_use_underscore=1
+autocmd BufReadPre *.js let b:javascript_lib_use_chai=1
+autocmd BufReadPre *.js let b:javascript_lib_use_react=1
 
 let g:OmniSharp_timeout = 1
 set noshowmatch
@@ -45,7 +49,7 @@ set list lcs=tab:\|\ ,trail:·
 
 set et!
 set cursorline cursorcolumn
-set ts=4 sts=0 sw=4 noexpandtab
+set ts=4 sts=0 sw=4 expandtab
 set number ruler
 set autoindent
 set encoding=utf-8
