@@ -41,7 +41,7 @@ color gruvbox
 hi Normal ctermbg=none
 
 hi link LineTooLong ColorColumn
-call matchadd('LineTooLong', '\%>80v.\+')
+call matchadd('LineTooLong', '\%>70v.\+')
 
 hi link ExtraWhitespace ColorColumn
 call matchadd('ExtraWhitespace', '\s\+$\| \+\ze\t\|[^\t]\zs\t\+')
