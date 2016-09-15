@@ -39,6 +39,7 @@ let g:syntastic_cs_checkers = ['syntax', 'semantic', 'issues']
 set background=dark
 color gruvbox
 hi Normal ctermbg=none
+let g:airline_powerline_fonts=1
 
 hi link LineTooLong ColorColumn
 call matchadd('LineTooLong', '\%>70v.\+')
