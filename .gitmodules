@@ -31,9 +31,6 @@
 [submodule "bundle/actionscript"]
 	path = bundle/actionscript
 	url = https://github.com/vim-scripts/actionscript.vim.git
-[submodule "bundle/syntastic"]
-	path = bundle/syntastic
-	url = https://github.com/scrooloose/syntastic.git
 [submodule "bundle/supertab"]
 	path = bundle/supertab
 	url = https://github.com/ervandew/supertab.git
