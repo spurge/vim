@@ -20,13 +20,12 @@ set splitbelow
 
 " Neomake
 autocmd! BufWritePost,BufEnter * Neomake
-autocmd! TextChanged,TextChangedI * update | Neomake
 let g:neomake_warning_sign={
-  \ 'text': '>>',
+  \ 'text': '»',
   \ 'texthl': 'Question',
   \ }
 let g:neomake_error_sign={
-  \ 'text': '>>',
+  \ 'text': '»',
   \ 'texthl': 'WarningMsg',
   \ }
 
