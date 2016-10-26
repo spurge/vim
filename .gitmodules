@@ -115,3 +115,6 @@
 [submodule "bundle/python-syntax"]
 	path = bundle/python-syntax
 	url = https://github.com/hdima/python-syntax
+[submodule "bundle/elm"]
+	path = bundle/elm
+	url = https://github.com/lambdatoast/elm.vim
