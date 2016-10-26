@@ -21,11 +21,11 @@ set splitbelow
 " Neomake
 autocmd! BufWritePost,BufEnter * Neomake
 let g:neomake_warning_sign={
-  \ 'text': '»',
+  \ 'text': 'w»',
   \ 'texthl': 'Question',
   \ }
 let g:neomake_error_sign={
-  \ 'text': '»',
+  \ 'text': 'e»',
   \ 'texthl': 'WarningMsg',
   \ }
 
