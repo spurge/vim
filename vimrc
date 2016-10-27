@@ -61,7 +61,7 @@ set list lcs=tab:\|\ ,trail:·
 
 set et!
 set cursorline cursorcolumn
-set ts=4 sts=0 sw=4 expandtab
+set ts=2 sts=0 sw=2 expandtab
 set number ruler
 set autoindent
 set encoding=utf-8
