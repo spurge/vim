@@ -44,8 +44,12 @@ let g:pep8_map='<Leader>8'
 let python_highlight_all=1
 
 " C#
+let g:OmniSharp_timeout=1
+set noshowmatch
+set completeopt=longest,menuone,preview
+set splitbelow
 au BufNewFile,BufRead *.xaml setf xml
-let g:neomake_cs_enabled_makers=['syntax', 'semantic', 'issues']
+"let g:neomake_cs_enabled_makers=['syntax', 'semantic', 'issues']
 
 set background=dark
 color gruvbox
