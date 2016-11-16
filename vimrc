@@ -51,7 +51,7 @@ set splitbelow
 au BufNewFile,BufRead *.xaml setf xml
 
 " Java
-let g:neomake_java_javac_args=['-d', '.']
+let g:neomake_java_javac_options=['-d', '.']
 
 set background=dark
 color gruvbox
