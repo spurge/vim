@@ -18,4 +18,4 @@ install:
 update:
 	git pull
 	git submodule sync
-	git submodule update --init
+	git submodule foreach "(git checkout master; git pull)"
