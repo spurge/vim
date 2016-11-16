@@ -49,7 +49,9 @@ set noshowmatch
 set completeopt=longest,menuone,preview
 set splitbelow
 au BufNewFile,BufRead *.xaml setf xml
-"let g:neomake_cs_enabled_makers=['syntax', 'semantic', 'issues']
+
+" Java
+let g:neomake_java_javac_args=['-d', '.']
 
 set background=dark
 color gruvbox
