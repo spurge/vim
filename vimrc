@@ -51,6 +51,7 @@ set splitbelow
 au BufNewFile,BufRead *.xaml setf xml
 
 " Java
+autocmd FileType java setlocal omnifunc=javacomplete#Complete
 let g:neomake_java_javac_options=['-d', '.']
 let java_highlight_all=1
 let java_highlight_functions=1
