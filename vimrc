@@ -33,6 +33,7 @@ let g:neomake_error_sign={
 au Filetype javascript set dictionary+=$HOME/.vim/dict/node/dict/node.dict
 let g:neomake_javascript_enabled_makers=['eslint']
 let g:js_context_colors_enabled=1
+let javascript_highlight_all=1
 autocmd BufReadPre *.js let b:javascript_lib_use_underscore=1
 autocmd BufReadPre *.js let b:javascript_lib_use_chai=1
 autocmd BufReadPre *.js let b:javascript_lib_use_react=1
