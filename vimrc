@@ -52,6 +52,9 @@ au BufNewFile,BufRead *.xaml setf xml
 
 " Java
 let g:neomake_java_javac_options=['-d', '.']
+let java_highlight_all=1
+let java_highlight_functions=1
+let java_highlight_java_lang_ids=1
 
 set background=dark
 color gruvbox
