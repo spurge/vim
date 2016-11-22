@@ -85,7 +85,7 @@ nmap ,t <Esc>:tabnew<CR>
 nmap <Leader><Tab> <Esc>:tabn<CR>
 
 " NerdTree
-nmap <Leader>n <Esc>:NERDTreeToggle<CR>
+"nmap <Leader>n <Esc>:NERDTreeToggle<CR>
 
 " Neovim's terminal
 tnoremap <Leader>e <C-\><C-n>
