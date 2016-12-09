@@ -124,3 +124,6 @@
 [submodule "bundle/ranger"]
 	path = bundle/ranger
 	url = https://github.com/Mizuchi/vim-ranger.git
+[submodule "bundle/javaimp"]
+	path = bundle/javaimp
+	url = https://github.com/rustushki/JavaImp.vim

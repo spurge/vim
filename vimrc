@@ -57,6 +57,10 @@ let g:neomake_java_javac_options=['-d', '.']
 let java_highlight_all=1
 let java_highlight_functions=1
 let java_highlight_java_lang_ids=1
+let g:JavaImpPaths=
+  \ $HOME . "/.m2/repository," .
+  \ "./src/main/java"
+let g:JavaImpDataDir="/tmp/javaimp"
 
 set background=dark
 color gruvbox
