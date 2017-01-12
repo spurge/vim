@@ -1,11 +1,11 @@
 vim
 ===
 
-My vim distribution
+My neovim distribution
 
 Install
 -------
 
-	git clone https://github.com/spurge/vim.git .vim
-	cd .vim
-	make install
+1. `git clone https://github.com/spurge/vim.git .vim`
+2. Open neovim and run `:PluginInstall`
+3. Close neovim and open it again
