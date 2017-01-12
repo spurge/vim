@@ -1,4 +1,46 @@
-execute pathogen#infect()
+set nocompatible
+"set filetype off
+
+" Vundle
+set runtimepath+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+Plugin 'VundleVim/Vundle.vim'
+
+" Util
+Plugin 'benekastah/neomake'
+Plugin 'bling/vim-airline'
+Plugin 'tpope/vim-dispatch'
+Plugin 'mattn/emmet-vim'
+Plugin 'airblade/vim-gitgutter'
+Plugin 'jamessan/vim-gnupg'
+Plugin 'yggdroot/indentline'
+Plugin 'neovim/node-host'
+Plugin 'moll/vim-node'
+Plugin 'mizuchi/vim-ranger'
+Plugin 'tpope/vim-sleuth'
+Plugin 'ervandew/supertab'
+Plugin 'tpope/vim-surround'
+
+" Themes
+Plugin 'morhetz/gruvbox'
+
+" Languages
+Plugin 'vim-scripts/actionscript'
+Plugin 'yuratomo/dotnet-complete'
+Plugin 'lambdatoast/elm.vim'
+Plugin 'artur-shaik/vim-javacomplete2'
+Plugin 'rustushki/javaimp.vim'
+Plugin 'othree/javascript-libraries-syntax.vim'
+Plugin 'pangloss/vim-javascript'
+Plugin 'bigfish/vim-js-context-coloring'
+Plugin 'omnisharp/omnisharp-vim'
+Plugin 'vim-scripts/pep8'
+Plugin 'digitaltoad/vim-pug'
+Plugin 'pycqa/pyflakes'
+Plugin 'hdima/python-syntax'
+
+call vundle#end()
 
 set backup
 set backupdir=/tmp
@@ -32,8 +74,9 @@ let g:neomake_error_sign={
 " Javascript
 au Filetype javascript set dictionary+=$HOME/.vim/dict/node/dict/node.dict
 let g:neomake_javascript_enabled_makers=['eslint']
-let g:js_context_colors_enabled=1
+let g:js_context_colors_enabled=0
 let javascript_highlight_all=1
+let g:javascript_plugin_jsdoc=1
 autocmd BufReadPre *.js let b:javascript_lib_use_underscore=1
 autocmd BufReadPre *.js let b:javascript_lib_use_chai=1
 autocmd BufReadPre *.js let b:javascript_lib_use_react=1
@@ -67,13 +110,8 @@ color gruvbox
 hi Normal ctermbg=none
 let g:airline_powerline_fonts=1
 
-hi link LineTooLong ColorColumn
-call matchadd('LineTooLong', '\%>70v.\+')
 
-hi link ExtraWhitespace ColorColumn
-call matchadd('ExtraWhitespace', '\s\+$\| \+\ze\t\|[^\t]\zs\t\+')
 set list lcs=tab:\|\ ,trail:·
-
 set et!
 set cursorline cursorcolumn
 set ts=2 sts=0 sw=2 expandtab
@@ -87,9 +125,6 @@ nmap ,n <Esc>:tabn<CR>
 nmap ,p <Esc>:tabp<CR>
 nmap ,t <Esc>:tabnew<CR>
 nmap <Leader><Tab> <Esc>:tabn<CR>
-
-" NerdTree
-"nmap <Leader>n <Esc>:NERDTreeToggle<CR>
 
 " Neovim's terminal
 tnoremap <Leader>e <C-\><C-n>
