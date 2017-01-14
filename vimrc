@@ -39,6 +39,9 @@ Plugin 'vim-scripts/pep8'
 Plugin 'digitaltoad/vim-pug'
 Plugin 'pycqa/pyflakes'
 Plugin 'hdima/python-syntax'
+Plugin 'rust-lang/rust.vim'
+Plugin 'racer-rust/vim-racer'
+Plugin 'cespare/vim-toml'
 
 call vundle#end()
 
