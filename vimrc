@@ -42,6 +42,8 @@ Plugin 'hdima/python-syntax'
 Plugin 'rust-lang/rust.vim'
 Plugin 'racer-rust/vim-racer'
 Plugin 'cespare/vim-toml'
+Plugin 'leafgarland/typescript-vim'
+Plugin 'Shougo/vimproc.vim'
 
 call vundle#end()
 
