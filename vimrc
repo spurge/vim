@@ -21,6 +21,7 @@ Plugin 'mizuchi/vim-ranger'
 Plugin 'tpope/vim-sleuth'
 Plugin 'ervandew/supertab'
 Plugin 'tpope/vim-surround'
+Plugin 'Shougo/vimproc.vim'
 
 " Themes
 Plugin 'morhetz/gruvbox'
@@ -43,7 +44,7 @@ Plugin 'rust-lang/rust.vim'
 Plugin 'racer-rust/vim-racer'
 Plugin 'cespare/vim-toml'
 Plugin 'leafgarland/typescript-vim'
-Plugin 'Shougo/vimproc.vim'
+Plugin 'Quramy/tsuquyomi'
 
 call vundle#end()
 
