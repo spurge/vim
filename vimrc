@@ -45,6 +45,7 @@ Plugin 'racer-rust/vim-racer'
 Plugin 'cespare/vim-toml'
 Plugin 'leafgarland/typescript-vim'
 Plugin 'Quramy/tsuquyomi'
+Plugin 'fatih/vim-go'
 
 call vundle#end()
 
@@ -65,6 +66,7 @@ set completeopt=menuone,longest,preview
 let g:OmniSharp_timeout = 1
 set noshowmatch
 set splitbelow
+set shell=bash
 
 " Neomake
 autocmd! BufWritePost,BufEnter * Neomake
@@ -110,6 +112,14 @@ let g:JavaImpPaths=
   \ $HOME . "/.m2/repository," .
   \ "./src/main/java"
 let g:JavaImpDataDir="/tmp/javaimp"
+
+" Go
+let g:go_highlight_functions=1
+let g:go_highlight_methods=1
+let g:go_highlight_fields=1
+let g:go_highlight_types=1
+let g:go_highlight_operators=1
+let g:go_highlight_build_constraints=1
 
 set background=dark
 color gruvbox
