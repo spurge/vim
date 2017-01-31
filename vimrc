@@ -46,6 +46,7 @@ Plugin 'cespare/vim-toml'
 Plugin 'leafgarland/typescript-vim'
 Plugin 'Quramy/tsuquyomi'
 Plugin 'fatih/vim-go'
+Plugin 'jparise/vim-graphql'
 
 call vundle#end()
 
