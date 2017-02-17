@@ -56,7 +56,6 @@ set dir=/tmp
 set undodir=/tmp/nvim/undodir
 set undofile
 
-
 syntax enable
 syntax on
 
@@ -64,13 +63,13 @@ filetype plugin indent on
 
 let g:SuperTabDefaultCompletionType='context'
 set completeopt=menuone,longest,preview
-let g:OmniSharp_timeout = 1
+let g:OmniSharp_timeout=1
 set noshowmatch
 set splitbelow
 set shell=bash
 
 " Neomake
-autocmd! BufWritePost,BufEnter * Neomake
+autocmd! BufWritePost,BufReadPost * Neomake
 let g:neomake_warning_sign={
   \ 'text': 'w»',
   \ 'texthl': 'Question',
@@ -79,6 +78,7 @@ let g:neomake_error_sign={
   \ 'text': 'e»',
   \ 'texthl': 'WarningMsg',
   \ }
+let g:neomake_open_list=1
 
 " Javascript
 au Filetype javascript set dictionary+=$HOME/.vim/dict/node/dict/node.dict
@@ -121,6 +121,15 @@ let g:go_highlight_fields=1
 let g:go_highlight_types=1
 let g:go_highlight_operators=1
 let g:go_highlight_build_constraints=1
+
+" Rust
+au FileType rust compiler cargo
+let g:rustfmt_autosave=1
+let g:neomake_rust_rustc_maker={
+  \ 'exe': 'rustc',
+  \ 'args': ['-L', 'target/debug/deps'],
+  \ }
+
 
 set background=dark
 color gruvbox
