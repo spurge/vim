@@ -22,6 +22,7 @@ Plugin 'tpope/vim-sleuth'
 Plugin 'ervandew/supertab'
 Plugin 'tpope/vim-surround'
 Plugin 'Shougo/vimproc.vim'
+Plugin 'Valloric/YouCompleteMe'
 
 " Themes
 Plugin 'morhetz/gruvbox'
@@ -78,7 +79,7 @@ let g:neomake_error_sign={
   \ 'text': 'e»',
   \ 'texthl': 'WarningMsg',
   \ }
-let g:neomake_open_list=1
+let g:neomake_open_list=0
 
 " Javascript
 au Filetype javascript set dictionary+=$HOME/.vim/dict/node/dict/node.dict
@@ -124,18 +125,21 @@ let g:go_highlight_build_constraints=1
 
 " Rust
 au FileType rust compiler cargo
+let g:racer_cmd='/usr/bin/racer'
 let g:rustfmt_autosave=1
 let g:neomake_rust_rustc_maker={
   \ 'exe': 'rustc',
-  \ 'args': ['-L', 'target/debug/deps'],
+  \ 'args': [
+  \   '-L', 'target/debug/deps',
+  \   '--crate-type', 'lib'
+  \ ]
   \ }
-
+let g:ycm_rust_src_path='~/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src'
 
 set background=dark
 color gruvbox
 hi Normal ctermbg=none
 let g:airline_powerline_fonts=1
-
 
 set list lcs=tab:\|\ ,trail:·
 set et!
