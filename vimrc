@@ -23,6 +23,7 @@ Plugin 'ervandew/supertab'
 Plugin 'tpope/vim-surround'
 Plugin 'Shougo/vimproc.vim'
 Plugin 'Valloric/YouCompleteMe'
+Plugin 'Chiel92/vim-autoformat'
 
 " Themes
 Plugin 'morhetz/gruvbox'
@@ -124,17 +125,17 @@ let g:go_highlight_operators=1
 let g:go_highlight_build_constraints=1
 
 " Rust
-au FileType rust compiler cargo
-let g:racer_cmd='/usr/bin/racer'
+"au FileType rust compiler cargo
+"let g:racer_cmd='/usr/bin/racer'
 let g:rustfmt_autosave=1
-let g:neomake_rust_rustc_maker={
-  \ 'exe': 'rustc',
-  \ 'args': [
-  \   '-L', 'target/debug/deps',
-  \   '--crate-type', 'lib'
-  \ ]
-  \ }
-let g:ycm_rust_src_path='~/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src'
+"let g:neomake_rust_rustc_maker={
+"  \ 'exe': 'rustc',
+"  \ 'args': [
+"  \   '-L', 'target/debug/deps',
+"  \   '--crate-type', 'lib'
+"  \ ]
+"  \ }
+"let g:ycm_rust_src_path='~/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src'
 
 set background=dark
 color gruvbox
