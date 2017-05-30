@@ -23,7 +23,6 @@ Plugin 'ervandew/supertab'
 Plugin 'tpope/vim-surround'
 Plugin 'Shougo/vimproc.vim'
 Plugin 'Valloric/YouCompleteMe'
-Plugin 'Chiel92/vim-autoformat'
 
 " Themes
 Plugin 'morhetz/gruvbox'
@@ -69,28 +68,38 @@ let g:OmniSharp_timeout=1
 set noshowmatch
 set splitbelow
 set shell=bash
+set autoread
 
 " Neomake
 autocmd! BufWritePost,BufReadPost * Neomake
 let g:neomake_warning_sign={
-  \ 'text': 'w»',
-  \ 'texthl': 'Question',
-  \ }
+			\ 'text': 'w»',
+			\ 'texthl': 'Question',
+			\ }
 let g:neomake_error_sign={
-  \ 'text': 'e»',
-  \ 'texthl': 'WarningMsg',
-  \ }
+			\ 'text': 'e»',
+			\ 'texthl': 'WarningMsg',
+			\ }
 let g:neomake_open_list=0
 
-" Javascript
+" JavaScript
+autocmd BufWritePost *.js silent !standard --fix %
 au Filetype javascript set dictionary+=$HOME/.vim/dict/node/dict/node.dict
-let g:neomake_javascript_enabled_makers=['eslint']
+let g:neomake_javascript_enabled_makers=['eslint', 'standard']
 let g:js_context_colors_enabled=0
 let javascript_highlight_all=1
 let g:javascript_plugin_jsdoc=1
 autocmd BufReadPre *.js let b:javascript_lib_use_underscore=1
 autocmd BufReadPre *.js let b:javascript_lib_use_chai=1
 autocmd BufReadPre *.js let b:javascript_lib_use_react=1
+
+" TypeScript
+autocmd BufWritePost *.ts silent !tslint -o /dev/null --fix %
+let g:neomake_typescript_enabled_makers=['tslint', 'tsc']
+let g:neomake_typescript_tslint_maker={
+ \ 'exe': 'tslint',
+ \ 'args': ['-t', 'msbuild']
+ \ }
 
 " Python
 au Filetype python set omnifunc=pythoncomplete#Complete
@@ -112,8 +121,8 @@ let java_highlight_all=1
 let java_highlight_functions=1
 let java_highlight_java_lang_ids=1
 let g:JavaImpPaths=
-  \ $HOME . "/.m2/repository," .
-  \ "./src/main/java"
+			\ $HOME . "/.m2/repository," .
+			\ "./src/main/java"
 let g:JavaImpDataDir="/tmp/javaimp"
 
 " Go
