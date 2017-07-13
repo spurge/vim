@@ -7,5 +7,7 @@ Install
 -------
 
 1. `git clone https://github.com/spurge/vim.git .vim`
-2. Open neovim and run `:PluginInstall`
-3. Close neovim and open it again
+2. `git submodule update --init bundle/Vundle.vim`
+3. `ln -s ~/.vim/vimrc ~/.config/nvim/init.vim`
+4. Open neovim and run `:PluginInstall`
+5. Close neovim and open it again

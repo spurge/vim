@@ -83,9 +83,9 @@ let g:neomake_error_sign={
 let g:neomake_open_list=0
 
 " JavaScript
-autocmd BufWritePost *.js silent !standard --fix %
+"autocmd BufWritePost *.js silent !standard --fix %
 au Filetype javascript set dictionary+=$HOME/.vim/dict/node/dict/node.dict
-let g:neomake_javascript_enabled_makers=['eslint', 'standard']
+let g:neomake_javascript_enabled_makers=['eslint']
 let g:js_context_colors_enabled=0
 let javascript_highlight_all=1
 let g:javascript_plugin_jsdoc=1
