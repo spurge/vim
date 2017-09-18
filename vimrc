@@ -19,6 +19,7 @@ Plugin 'neovim/node-host'
 Plugin 'moll/vim-node'
 Plugin 'mizuchi/vim-ranger'
 Plugin 'tpope/vim-sleuth'
+Plugin 'tpope/vim-fugitive'
 Plugin 'ervandew/supertab'
 Plugin 'tpope/vim-surround'
 Plugin 'Shougo/vimproc.vim'
@@ -67,7 +68,7 @@ set completeopt=menuone,longest,preview
 let g:OmniSharp_timeout=1
 set noshowmatch
 set splitbelow
-set shell=bash
+"set shell=bash
 set autoread
 
 " Neomake
