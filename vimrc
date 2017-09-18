@@ -49,6 +49,7 @@ Plugin 'leafgarland/typescript-vim'
 Plugin 'Quramy/tsuquyomi'
 Plugin 'fatih/vim-go'
 Plugin 'jparise/vim-graphql'
+Plugin 'posva/vim-vue'
 
 call vundle#end()
 
