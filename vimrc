@@ -50,6 +50,7 @@ Plugin 'Quramy/tsuquyomi'
 Plugin 'fatih/vim-go'
 Plugin 'jparise/vim-graphql'
 Plugin 'posva/vim-vue'
+Plugin 'derekwyatt/vim-scala'
 
 call vundle#end()
 
@@ -148,7 +149,8 @@ let g:rustfmt_autosave=1
 "  \ }
 "let g:ycm_rust_src_path='~/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src'
 
-set background=dark
+set background=light
+let g:gruvbox_contrast_light="hard"
 color gruvbox
 hi Normal ctermbg=none
 let g:airline_powerline_fonts=1
