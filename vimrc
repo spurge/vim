@@ -172,6 +172,7 @@ nmap <Leader><Tab> <Esc>:tabn<CR>
 
 " Neovim's terminal
 tnoremap <Leader>e <C-\><C-n>
+au TermOpen * setlocal nonumber norelativenumber
 
 " Tagbar
 let g:tagbar_usearrows=1
