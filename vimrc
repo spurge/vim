@@ -51,6 +51,7 @@ Plugin 'fatih/vim-go'
 Plugin 'jparise/vim-graphql'
 Plugin 'posva/vim-vue'
 Plugin 'derekwyatt/vim-scala'
+Plugin 'udalov/kotlin-vim'
 
 call vundle#end()
 
