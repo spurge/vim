@@ -23,14 +23,16 @@ Plugin 'tpope/vim-fugitive'
 Plugin 'ervandew/supertab'
 Plugin 'tpope/vim-surround'
 Plugin 'Shougo/vimproc.vim'
-Plugin 'Valloric/YouCompleteMe'
+Plugin 'roxma/nvim-completion-manager'
+Plugin 'autozimu/LanguageClient-neovim'
+Plugin 'junegunn/fzf'
 
 " Themes
 Plugin 'morhetz/gruvbox'
 
 " Languages
 Plugin 'vim-scripts/actionscript'
-Plugin 'yuratomo/dotnet-complete'
+" Plugin 'yuratomo/dotnet-complete'
 Plugin 'lambdatoast/elm.vim'
 Plugin 'artur-shaik/vim-javacomplete2'
 Plugin 'rustushki/javaimp.vim'
@@ -66,13 +68,17 @@ syntax on
 
 filetype plugin indent on
 
-let g:SuperTabDefaultCompletionType='context'
+"let g:SuperTabDefaultCompletionType='context'
 set completeopt=menuone,longest,preview
 let g:OmniSharp_timeout=1
 set noshowmatch
 set splitbelow
 "set shell=bash
 set autoread
+
+" LSP
+let g:LanguageClient_autoStart=1
+let g:LanguageClient_serverCommands={}
 
 " Neomake
 autocmd! BufWritePost,BufReadPost * Neomake
@@ -87,6 +93,7 @@ let g:neomake_error_sign={
 let g:neomake_open_list=0
 
 " JavaScript
+let g:LanguageClient_serverCommands['javascript']=['javascript-typescript-stdio']
 "autocmd BufWritePost *.js silent !standard --fix %
 au Filetype javascript set dictionary+=$HOME/.vim/dict/node/dict/node.dict
 let g:neomake_javascript_enabled_makers=['eslint']
@@ -98,6 +105,7 @@ autocmd BufReadPre *.js let b:javascript_lib_use_chai=1
 autocmd BufReadPre *.js let b:javascript_lib_use_react=1
 
 " TypeScript
+let g:LanguageClient_serverCommands['typescript']=['javascript-typescript-stdio']
 autocmd BufWritePost *.ts silent !tslint -o /dev/null --fix %
 let g:neomake_typescript_enabled_makers=['tslint', 'tsc']
 let g:neomake_typescript_tslint_maker={
@@ -105,7 +113,11 @@ let g:neomake_typescript_tslint_maker={
  \ 'args': ['-t', 'msbuild']
  \ }
 
+" Vue
+let g:LanguageClient_serverCommands['vue']=['vls']
+
 " Python
+let g:LanguageClient_serverCommands['python']=['pyls']
 au Filetype python set omnifunc=pythoncomplete#Complete
 let g:pyflakes_use_quickfix=0
 let g:pep8_map='<Leader>8'
@@ -130,6 +142,7 @@ let g:JavaImpPaths=
 let g:JavaImpDataDir="/tmp/javaimp"
 
 " Go
+let g:LanguageClient_serverCommands['go']=['go-langserver']
 let g:go_highlight_functions=1
 let g:go_highlight_methods=1
 let g:go_highlight_fields=1
@@ -138,6 +151,7 @@ let g:go_highlight_operators=1
 let g:go_highlight_build_constraints=1
 
 " Rust
+let g:LanguageClient_serverCommands['rust']=['rustup', 'run', 'nightly', 'rls']
 "au FileType rust compiler cargo
 "let g:racer_cmd='/usr/bin/racer'
 let g:rustfmt_autosave=1
