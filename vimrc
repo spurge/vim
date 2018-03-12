@@ -54,6 +54,7 @@ Plugin 'jparise/vim-graphql'
 Plugin 'posva/vim-vue'
 Plugin 'derekwyatt/vim-scala'
 Plugin 'udalov/kotlin-vim'
+Plugin 'dart-lang/dart-vim-plugin'
 
 call vundle#end()
 
@@ -163,6 +164,10 @@ let g:rustfmt_autosave=1
 "  \ ]
 "  \ }
 "let g:ycm_rust_src_path='~/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src'
+
+" Dart
+let dart_style_guide=2
+let g:LanguageClient_serverCommands['dart']=['dart_language_server']
 
 set background=light
 let g:gruvbox_contrast_light="hard"
