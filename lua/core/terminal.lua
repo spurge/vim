@@ -117,9 +117,8 @@ local function toggle(name, cmd, size)
     vim.api.nvim_win_set_buf(0, slot.buf)
     vim.cmd.startinsert()
   else
-    -- 'shell' is POSIX (see core/shell.lua), so an interactive terminal
-    -- has to ask for the interactive shell explicitly.
-    vim.cmd.terminal(cmd or shell.interactive())
+    -- Always the interactive shell, whatever 'shell' happens to be.
+    shell.open_terminal(cmd)
     slots[name] = { buf = vim.api.nvim_get_current_buf() }
   end
 end
@@ -128,7 +127,7 @@ map({ "n", "t" }, "<Leader>cs", function() toggle("shell", nil, 0.35) end,
   { desc = "toggle shell split" })
 map("n", "<Leader>cV", function()
   vim.cmd("vsplit")
-  vim.cmd.terminal(shell.interactive())
+  shell.open_terminal()
 end, { desc = "shell in vertical split" })
 
 -- ── 5. Coding agent, if configured ────────────────────────────────────
@@ -140,7 +139,7 @@ if agent and agent ~= "" then
 
   map("n", "<Leader>cv", function()
     vim.cmd("vsplit")
-    vim.cmd.terminal(agent)
+    shell.open_terminal(agent)
   end, { desc = agent .. " in vertical split" })
 
   -- Send the current file's path to the agent terminal, so you don't

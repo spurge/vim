@@ -108,13 +108,24 @@ return {
   },
 
   -- ── Shell ───────────────────────────────────────────────────────────
-  -- Neovim's 'shell' is used for :!, system(), AND plugin shell-outs.
-  -- Plugins emit POSIX, so a non-POSIX login shell (fish, nushell,
-  -- xonsh) breaks conform and fzf-lua in ways that look like plugin
-  -- bugs. We therefore keep the two roles separate.
   shell = {
-    internal = nil,    -- nil = autodetect: bash, else /bin/sh
-    interactive = nil, -- nil = autodetect: fish, else $SHELL, else internal
+    -- What :terminal and the terminal toggles (,cs ,cc ,cV) open.
+    -- nil = autodetect: fish, else $SHELL, else bash.
+    interactive = nil,
+
+    -- What :!, system(), :grep and plugin shell-outs use.
+    --
+    --   "interactive"  the same shell as above (default). Least
+    --                  surprising — everything matches your $SHELL.
+    --   "posix"        force bash/sh. Use this if fzf-lua returns
+    --                  nothing or a formatter silently stops: plugins
+    --                  emit POSIX constructs like `VAR=x cmd` and
+    --                  nested `$(...)` that fish and nushell reject.
+    --   "/bin/zsh"     an explicit path.
+    --
+    -- The terminal toggles exec the interactive shell directly, so they
+    -- give you fish either way. :ShellInfo shows what's in effect.
+    internal = "interactive",
   },
 
   -- ── Behaviour ───────────────────────────────────────────────────────

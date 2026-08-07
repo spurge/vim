@@ -33,7 +33,7 @@ local defaults = {
     agent = nil,
     height = 0.4,
   },
-  shell = { internal = nil, interactive = nil },
+  shell = { interactive = nil, internal = "interactive" },
   format_on_save = true,
   spell = { "en_us" },
   extra_plugins = {},

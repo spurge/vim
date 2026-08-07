@@ -24,8 +24,8 @@ require("core.plugins")     -- vim.pack.add + setup calls
 require("core.options")     -- editor options
 require("core.keymaps")     -- keymaps
 require("core.theme")       -- colorscheme + OS light/dark following
+require("core.shell")       -- which shell for :terminal vs for system()
 require("core.lsp")         -- native vim.lsp
-require("core.shell")       -- POSIX internally, your shell interactively
 require("core.terminal")    -- terminal mode escape, nesting, agent splits
 require("core.format")      -- format on save
 require("core.statusline")  -- native statusline + tabline
