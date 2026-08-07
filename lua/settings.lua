@@ -128,6 +128,27 @@ return {
     internal = "interactive",
   },
 
+  -- ── Tabs ────────────────────────────────────────────────────────────
+  -- Where the tab list lives, and how much it tells you about each entry.
+  tabs = {
+    --   "tabline"  the usual strip across the top, one entry per tabpage
+    --   "sidebar"  a fixed-width window down the left, with each tab's
+    --              buffers listed underneath it and foldable
+    --   "none"     neither
+    --
+    -- Toggle between the first two at any time with <Leader>B, or pick
+    -- one with :Tabs tabline. Both are clickable with the mouse.
+    display = "sidebar",
+
+    width = 32, -- sidebar only
+
+    -- The per-entry summary. All of it comes from state Neovim already
+    -- has — no shelling out — so none of it can go stale.
+    show_path = true,        -- the directory, so same-named files differ
+    show_git = true,         -- +added ~changed -removed, from gitsigns
+    show_diagnostics = true, -- ✖errors ⚠warnings, from the LSP
+  },
+
   -- ── Behaviour ───────────────────────────────────────────────────────
   format_on_save = true,
   spell = { "en_us" }, -- add your own, e.g. { "en_us", "sv", "de" }

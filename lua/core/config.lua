@@ -34,6 +34,13 @@ local defaults = {
     height = 0.4,
   },
   shell = { interactive = nil, internal = "interactive" },
+  tabs = {
+    display = "tabline",
+    width = 32,
+    show_path = true,
+    show_git = true,
+    show_diagnostics = true,
+  },
   format_on_save = true,
   spell = { "en_us" },
   extra_plugins = {},

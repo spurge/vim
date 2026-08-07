@@ -48,6 +48,11 @@ tflint = "latest"
 "go:github.com/gruntwork-io/terragrunt-ls" = "latest"
 
 # ── Everything else ───────────────────────────────────────────────────
+# nvim-treesitter `main` builds every grammar by shelling out to this.
+# mise resolves it to the GitHub release, which is the CLI. Homebrew splits
+# them: `brew install tree-sitter` gives you the library and NO binary —
+# you want tree-sitter-cli there.
+tree-sitter = "latest"
 taplo = "latest"
 shfmt = "latest"
 shellcheck = "latest"

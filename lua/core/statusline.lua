@@ -1,5 +1,5 @@
--- Statusline and tabline, native. Replaces a statusline plugin with
--- ~110 lines and no dependencies.
+-- Statusline, native. Replaces a statusline plugin with ~90 lines and no
+-- dependencies.
 --
 -- Recomputed on every redraw, so everything here stays cheap: no shelling
 -- out, no git calls (gitsigns already puts the branch in a buffer var).
@@ -83,21 +83,5 @@ vim.api.nvim_create_autocmd({ "DiagnosticChanged", "LspAttach", "LspDetach" }, {
   callback = function() vim.cmd.redrawstatus() end,
 })
 
--- ── Tabline ───────────────────────────────────────────────────────────
--- The default shows nothing useful, and the tab keymaps make tabs
--- first-class here.
-function _G.NvimTabline()
-  local out = {}
-  for i, tab in ipairs(vim.api.nvim_list_tabpages()) do
-    local win = vim.api.nvim_tabpage_get_win(tab)
-    local buf = vim.api.nvim_win_get_buf(win)
-    local name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":t")
-    if name == "" then name = "[No Name]" end
-    local hl = tab == vim.api.nvim_get_current_tabpage() and "%#TabLineSel#" or "%#TabLine#"
-    table.insert(out, ("%s %d:%s %%*"):format(hl, i, name))
-  end
-  return table.concat(out) .. "%#TabLineFill#"
-end
-
-vim.o.tabline = "%!v:lua.NvimTabline()"
-vim.o.showtabline = 1
+-- The tabline lives in lua/core/tabs.lua — it shares a model with the
+-- stacked sidebar, which is a window rather than a format string.

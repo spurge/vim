@@ -9,6 +9,7 @@ map("n", "<Leader>p", "<Cmd>tabprevious<CR>", { desc = "tab: prev" })
 map("n", "<Leader>t", "<Cmd>tabnew<CR>", { desc = "tab: new" })
 map("n", "<Leader><Tab>", "<Cmd>tabnext<CR>", { desc = "tab: next" })
 map("n", "<Leader>T", "<Cmd>tabclose<CR>", { desc = "tab: close" })
+map("n", "<Leader>B", "<Cmd>TabsToggle<CR>", { desc = "tab: stacked sidebar / top tabline" })
 
 -- ── Clipboard ─────────────────────────────────────────────────────────
 -- settings.clipboard = "system" makes plain y/p use the system clipboard

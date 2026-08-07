@@ -85,6 +85,9 @@ out()
 out(bold("Core tools"))
 report({ bin = "git", purpose = "vim.pack clones plugins over git", hint = "xcode-select --install  |  apt install git" }, true)
 report({ bin = "rg", purpose = "fzf-lua live_grep, :grep", hint = "brew install ripgrep" }, true)
+-- NB tree-sitter-cli, not tree-sitter: the latter is the library only, and
+-- installs happily without ever giving you the binary.
+report({ bin = "tree-sitter", purpose = "nvim-treesitter compiles every grammar with it", hint = "brew install tree-sitter-cli" }, true)
 report({ bin = "fd", purpose = "fzf-lua file finding", hint = "brew install fd" }, false)
 
 -- ── Per-language, from the registry ───────────────────────────────────

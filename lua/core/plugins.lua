@@ -1,6 +1,6 @@
 -- Plugins, via Neovim 0.12's built-in vim.pack.
 --
--- Nine, plus whatever you list in settings.extra_plugins. Each one exists
+-- Eight, plus whatever you list in settings.extra_plugins. Each one exists
 -- because there is no native equivalent; the comment says what it replaces.
 --
 -- vim.pack writes a lockfile — commit it. Update with :lua vim.pack.update()
@@ -51,7 +51,33 @@ vim.pack.add(plugins)
 -- ── treesitter ────────────────────────────────────────────────────────
 local ok_ts, ts = pcall(require, "nvim-treesitter")
 if ok_ts then
-  pcall(ts.install, config.parsers())
+  -- The `main` branch builds every grammar with the tree-sitter CLI
+  -- (`tree-sitter generate` / `tree-sitter build`) rather than shipping
+  -- them. Without it each parser fails, nothing is recorded as installed,
+  -- and the next session retries the entire list — a few dozen errors on
+  -- every launch, forever, with no highlighting to show for it. One
+  -- actionable line beats that.
+  if vim.fn.executable("tree-sitter") == 1 then
+    -- Already-installed parsers are skipped internally, so this is cheap
+    -- after the first run.
+    pcall(ts.install, config.parsers())
+  else
+    vim.schedule(function()
+      vim.notify(
+        -- tree-sitter-cli, NOT tree-sitter: the latter is the library
+        -- only. It installs fine and still leaves you with no binary.
+        "tree-sitter CLI not found — no treesitter parsers can be built.\n"
+          .. "  brew install tree-sitter-cli\n"
+          .. "Then restart. `make verify` lists everything that's missing.",
+        vim.log.levels.WARN
+      )
+    end)
+  end
+
+  -- jsonc has no grammar of its own; it's json with comments. Point the
+  -- filetype at the json parser instead of asking for one that doesn't
+  -- exist.
+  pcall(vim.treesitter.language.register, "json", "jsonc")
 
   vim.api.nvim_create_autocmd("FileType", {
     group = vim.api.nvim_create_augroup("core.treesitter", { clear = true }),

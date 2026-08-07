@@ -159,7 +159,9 @@ return {
 
   json = {
     servers = { "jsonls" },
-    parsers = { "json", "jsonc" },
+    -- No jsonc parser exists upstream; plugins.lua maps the filetype to
+    -- the json one. Asking for it here only earns a warning per session.
+    parsers = { "json" },
     formatters = {
       json = { "prettierd", "prettier", stop_after_first = true },
       jsonc = { "prettierd", "prettier", stop_after_first = true },
