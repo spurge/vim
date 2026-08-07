@@ -23,9 +23,10 @@ Plugin 'tpope/vim-fugitive'
 Plugin 'ervandew/supertab'
 Plugin 'tpope/vim-surround'
 Plugin 'Shougo/vimproc.vim'
-Plugin 'roxma/nvim-completion-manager'
+" Plugin 'roxma/nvim-completion-manager'
 Plugin 'autozimu/LanguageClient-neovim'
 Plugin 'junegunn/fzf'
+Plugin 'scrooloose/nerdtree'
 
 " Themes
 Plugin 'morhetz/gruvbox'
@@ -119,10 +120,11 @@ let g:LanguageClient_serverCommands['vue']=['vls']
 
 " Python
 let g:LanguageClient_serverCommands['python']=['pyls']
-au Filetype python set omnifunc=pythoncomplete#Complete
-let g:pyflakes_use_quickfix=0
-let g:pep8_map='<Leader>8'
-let python_highlight_all=1
+let g:neomake_python_enabled_makers=['pylint']
+" au Filetype python set omnifunc=pythoncomplete#Complete
+" let g:pyflakes_use_quickfix=0
+" let g:pep8_map='<Leader>8'
+" let python_highlight_all=1
 
 " C#
 let g:OmniSharp_timeout=1
@@ -152,7 +154,7 @@ let g:go_highlight_operators=1
 let g:go_highlight_build_constraints=1
 
 " Rust
-let g:LanguageClient_serverCommands['rust']=['rustup', 'run', 'nightly', 'rls']
+let g:LanguageClient_serverCommands['rust']=['rustup', 'run', 'stable', 'rls']
 "au FileType rust compiler cargo
 "let g:racer_cmd='/usr/bin/racer'
 let g:rustfmt_autosave=1
@@ -183,6 +185,7 @@ set number ruler
 set autoindent
 set encoding=utf-8
 set mouse=a
+nmap <C-n> :NERDTreeToggle<CR>
 
 " Tabs
 nmap ,n <Esc>:tabn<CR>
@@ -195,5 +198,15 @@ tnoremap <Leader>e <C-\><C-n>
 au TermOpen * setlocal nonumber norelativenumber
 
 " Tagbar
-let g:tagbar_usearrows=1
-nnoremap <Leader>l <Esc>:TagbarToggle<CR>
+"let g:tagbar_usearrows=1
+"nnoremap <Leader>l <Esc>:TagbarToggle<CR>
+
+" Clipboard
+vnoremap <leader>y  "+y
+nnoremap <leader>Y  "+yg_
+nnoremap <leader>y  "+y
+nnoremap <leader>yy  "+yy
+nnoremap <leader>p "+p
+nnoremap <leader>P "+P
+vnoremap <leader>p "+p
+vnoremap <leader>P "+P

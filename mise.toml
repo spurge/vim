@@ -1,0 +1,136 @@
+# Optional. Tool versions and maintenance tasks.
+#
+#   mise install       install the tools below
+#   make verify        check what your enabled languages actually need
+#
+# mise is NOT required. `make verify` reads lua/settings.lua and prints an
+# install command for each missing tool, so you can use brew, apt, npm,
+# asdf or nothing at all. This file exists because pinning versions
+# per-project is nice when you have it.
+#
+# The [tools] list below is a SUPERSET covering every language in
+# lua/core/languages.lua. If you trimmed `languages` in lua/settings.lua,
+# delete the corresponding lines here too.
+
+[tools]
+# ── Runtimes ──────────────────────────────────────────────────────────
+go = "latest"
+node = "lts"
+ruby = "latest"
+python = "latest"
+java = "temurin-21"   # what kotlin-lsp analyses against; match your projects
+
+# ── Go ────────────────────────────────────────────────────────────────
+"go:golang.org/x/tools/gopls" = "latest"
+"go:golang.org/x/tools/cmd/goimports" = "latest"
+
+# ── JS / TS / JSON / YAML / bash ──────────────────────────────────────
+"npm:@vtsls/language-server" = "latest"
+"npm:typescript" = "latest"
+"npm:vscode-langservers-extracted" = "latest"   # eslint + json + html + css
+"npm:yaml-language-server" = "latest"
+"npm:bash-language-server" = "latest"
+"npm:@fsouza/prettierd" = "latest"
+
+# ── Ruby ──────────────────────────────────────────────────────────────
+"gem:ruby-lsp" = "latest"
+"gem:rubocop" = "latest"
+
+# ── Python ────────────────────────────────────────────────────────────
+"pipx:basedpyright" = "latest"
+ruff = "latest"
+
+# ── Terraform / OpenTofu / Terragrunt ─────────────────────────────────
+opentofu = "latest"
+terragrunt = "latest"
+terraform-ls = "latest"
+tflint = "latest"
+"go:github.com/gruntwork-io/terragrunt-ls" = "latest"
+
+# ── Everything else ───────────────────────────────────────────────────
+taplo = "latest"
+shfmt = "latest"
+shellcheck = "latest"
+lua-language-server = "latest"
+stylua = "latest"
+ktlint = "latest"
+ripgrep = "latest"
+fd = "latest"
+
+# Not manageable here, by design:
+#   neovim         install via your OS package manager; you want the
+#                  editor outside per-project version scope
+#   kotlin-lsp     JetBrains tap only: brew install JetBrains/utils/kotlin-lsp
+#   sourcekit-lsp  ships with Xcode
+#   swiftformat    brew install swiftformat
+
+# ══════════════════════════════════════════════════════════════════════
+# Tasks
+# ══════════════════════════════════════════════════════════════════════
+
+[tasks.install]
+description = "Install the tools in [tools], then report what's still missing"
+run = '''
+set -e
+mise install
+echo
+echo "==> checking what your enabled languages need"
+nvim -l scripts/verify.lua || true
+'''
+
+[tasks.update]
+description = "Update plugins and refresh the lockfile"
+run = '''
+nvim --headless -c 'lua vim.pack.update()' -c 'sleep 3' -c qa
+echo
+git status --short 2>/dev/null | grep -i lock || true
+echo "Commit the lockfile so every machine lands on the same revisions."
+'''
+
+[tasks.pin]
+description = "Reset plugins to the committed lockfile (use after a bad update)"
+run = "nvim --headless -c 'lua vim.pack.update(nil, { target = \"lockfile\" })' -c 'sleep 2' -c qa"
+
+[tasks.health]
+description = "Run :checkhealth and print it"
+run = "nvim --headless -c 'checkhealth' -c 'w! /tmp/nvim-health.txt' -c qa && cat /tmp/nvim-health.txt"
+
+[tasks.lsp]
+description = "Show which language servers attach, and to what"
+run = "nvim --headless -c 'checkhealth vim.lsp' -c 'w! /tmp/nvim-lsp.txt' -c qa && cat /tmp/nvim-lsp.txt"
+
+[tasks.lint]
+description = "Syntax-check and style-check everything"
+run = '''
+fail=0
+echo "==> lua syntax"
+for f in $(find . -name '*.lua' -not -path './.git/*' | sort); do
+  luac -p "$f" >/dev/null 2>&1 || luajit -bl "$f" >/dev/null 2>&1 || { echo "  FAIL $f"; fail=1; }
+done
+[ "$fail" -eq 0 ] && echo "  all files parse"
+
+echo "==> lua style"
+if command -v stylua >/dev/null 2>&1; then stylua --check . || fail=1; else echo "  stylua not installed"; fi
+
+echo "==> shell"
+command -v fish >/dev/null 2>&1 && fish --no-execute shell/nvim.fish && echo "  nvim.fish ok"
+sh -n shell/nvim.sh && echo "  nvim.sh ok"
+
+echo "==> config loads"
+nvim --headless -c 'lua require("core.config")' -c qa && echo "  core.config ok"
+
+exit "$fail"
+'''
+
+[tasks.fmt]
+description = "Format all lua with stylua"
+run = "stylua ."
+
+[tasks.clean]
+description = "Remove installed plugins; next launch reinstalls from the lockfile"
+run = '''
+for d in "$HOME/.local/share/nvim/site/pack/core" "$HOME/.local/share/nvim-test/site/pack/core"; do
+  [ -d "$d" ] && rm -rf "$d" && echo "removed $d"
+done
+echo "next launch will reinstall from the lockfile"
+'''
