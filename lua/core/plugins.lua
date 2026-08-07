@@ -1,6 +1,7 @@
 -- Plugins, via Neovim 0.12's built-in vim.pack.
 --
--- Eight, plus whatever you list in settings.extra_plugins. Each one exists
+-- Seven, plus your colorschemes and whatever you list in
+-- settings.extra_plugins. Each one exists
 -- because there is no native equivalent; the comment says what it replaces.
 --
 -- vim.pack writes a lockfile — commit it. Update with :lua vim.pack.update()
@@ -8,9 +9,6 @@
 local config = require("core.config")
 
 local plugins = {
-  -- Theme, from settings.theme.plugin
-  config.theme.plugin,
-
   -- Used as a DATA SOURCE only. It ships lsp/*.lua specs that
   -- vim.lsp.enable() reads directly; we never call lspconfig.setup().
   "https://github.com/neovim/nvim-lspconfig",
@@ -33,6 +31,12 @@ local plugins = {
   -- Surround: ys / cs / ds, remapped below to tpope's grammar.
   "https://github.com/echasnovski/mini.surround",
 }
+
+-- Every colorscheme in settings.theme.themes, so :ThemesToggle can reach
+-- all of them. They're cheap: a colorscheme is data until it's applied.
+for _, t in ipairs(config.theme.themes or {}) do
+  if t.plugin then table.insert(plugins, t.plugin) end
+end
 
 vim.list_extend(plugins, config.extra_plugins or {})
 vim.pack.add(plugins)

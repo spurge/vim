@@ -20,6 +20,10 @@
       "rev": "8d5d0c5aa92449368ac251e85451d79d8f69d296",
       "src": "https://github.com/echasnovski/mini.surround"
     },
+    "monokai-nightasty.nvim": {
+      "rev": "5731bc3c01e6c94a709021e5ee31070840e47584",
+      "src": "https://github.com/polirritmico/monokai-nightasty.nvim"
+    },
     "nvim-lspconfig": {
       "rev": "43ed3797b266e1ee8d222e491379ad471c9d3146",
       "src": "https://github.com/neovim/nvim-lspconfig"

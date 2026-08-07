@@ -19,13 +19,18 @@ local defaults = {
   clipboard = "explicit",
   clipboard_prefix = "\\",
   theme = {
-    plugin = "https://github.com/sainnhe/gruvbox-material",
-    colorscheme = "gruvbox-material",
+    -- An ordered list; :ThemesToggle cycles it. One entry is a perfectly
+    -- good list.
+    themes = {
+      {
+        plugin = "https://github.com/sainnhe/gruvbox-material",
+        colorscheme = "gruvbox-material",
+        options = {},
+      },
+    },
     follow_system = true,
-    light = nil,
-    dark = nil,
     transparent = false,
-    options = {},
+    remember = true,
   },
   indent = { width = 2, expandtab = true },
   terminal = {

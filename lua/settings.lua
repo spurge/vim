@@ -53,8 +53,41 @@ return {
 
   -- ── Theme ───────────────────────────────────────────────────────────
   theme = {
-    plugin = "https://github.com/sainnhe/gruvbox-material",
-    colorscheme = "gruvbox-material",
+    -- Cycled by :ThemesToggle (<Leader>tn), in this order. :Theme <name>
+    -- jumps straight to one. Every entry gets installed, so keep the list
+    -- to themes you actually want.
+    --
+    -- Per entry:
+    --   colorscheme  the :colorscheme name
+    --   options      vim.g.<key> set BEFORE loading — how the sainnhe
+    --                themes are configured
+    --   setup        passed to require(module).setup() before loading —
+    --                how Lua-configured themes are configured
+    --   module       only if it differs from `colorscheme`
+    --   light/dark   only for themes that ship as two separate names
+    themes = {
+      {
+        plugin = "https://github.com/sainnhe/gruvbox-material",
+        colorscheme = "gruvbox-material",
+        options = {
+          gruvbox_material_background = "hard",
+          gruvbox_material_foreground = "material",
+          gruvbox_material_better_performance = 1,
+          gruvbox_material_enable_italic = 1,
+          gruvbox_material_diagnostic_virtual_text = "colored",
+        },
+      },
+      {
+        plugin = "https://github.com/polirritmico/monokai-nightasty.nvim",
+        colorscheme = "monokai-nightasty",
+        setup = {
+          dark_style_background = "default", -- "dark" | "transparent" | #hex
+          light_style_background = "default",
+          markdown_header_marks = true,
+          terminal_colors = true,
+        },
+      },
+    },
 
     -- Follow the OS light/dark setting automatically. Requires a terminal
     -- that reports its background via OSC 11 (Ghostty, WezTerm, kitty,
@@ -62,23 +95,13 @@ return {
     -- the colorscheme. No polling, no plugin.
     follow_system = true,
 
-    -- Set these only if your colorscheme needs a different name per
-    -- background. Most modern ones read 'background' themselves, so nil
-    -- is usually right.
-    light = nil, -- e.g. "catppuccin-latte"
-    dark = nil,  -- e.g. "catppuccin-mocha"
+    -- Remember the cycled choice across restarts, in stdpath("state").
+    -- It's a per-machine preference, so it doesn't belong in this file.
+    remember = true,
 
+    -- Sets the sainnhe-style vim.g.<theme>_transparent_background. Themes
+    -- configured through `setup` express transparency there instead.
     transparent = false,
-
-    -- Passed through as vim.g.<key> before the colorscheme loads. These
-    -- defaults are gruvbox-material's; change them if you swap themes.
-    options = {
-      gruvbox_material_background = "hard",
-      gruvbox_material_foreground = "material",
-      gruvbox_material_better_performance = 1,
-      gruvbox_material_enable_italic = 1,
-      gruvbox_material_diagnostic_virtual_text = "colored",
-    },
   },
 
   -- ── Indentation ─────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 -- A small, hand-rolled Neovim configuration.
 --
--- Eight plugins, no framework. Requires Neovim 0.12+ for vim.pack (the
+-- Seven plugins plus colorschemes, no framework. Requires Neovim 0.12+
+-- for vim.pack (the
 -- built-in plugin manager) and native lsp/ directory discovery.
 --
 -- ┌────────────────────────────────────────────────────────────────────┐

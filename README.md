@@ -1,6 +1,8 @@
 # nvim
 
-A small, hand-rolled Neovim configuration. Eight plugins, no framework.
+A small, hand-rolled Neovim configuration. Seven plugins, no framework.
+
+(Plus whichever colorschemes you list — those are taste, not machinery.)
 
 Built on Neovim 0.12's native features rather than around them: `vim.pack`
 for plugins, `vim.lsp` for language servers, `vim.lsp.completion` for
@@ -36,7 +38,7 @@ return {
   languages = { "go", "python", "lua" },   -- the master switch
   leader = ",",
   clipboard = "explicit",                  -- y/p local, \y/\p system
-  theme = { colorscheme = "gruvbox-material", follow_system = true },
+  theme = { follow_system = true },        -- plus a `themes` list to cycle
   tabs = { display = "sidebar" },          -- or "tabline"
   terminal = { agent = "claude" },
 }
@@ -108,7 +110,7 @@ Mostly Neovim 0.11+ defaults, which need no configuration:
 | `,cs` `,cV`             | shell split / vertical shell split               |
 | `,cc` `,cv` `,cf`       | agent toggle / vertical / send file path         |
 | `,F`                    | format buffer or selection                       |
-| `,tt`                   | toggle light/dark manually                       |
+| `,tt` `,tn`             | toggle light/dark / next colorscheme             |
 | `\y` `\p`               | system clipboard (when `clipboard = "explicit"`) |
 
 Commenting is native since 0.10: `gcc`, `gc{motion}`, `gbc`. In the
@@ -144,10 +146,11 @@ scripts/verify.lua          tool check, driven by the language registry
 mise.toml                   optional tool pinning + tasks
 ```
 
-Eight plugins, each because there is no native equivalent: a colorscheme,
-nvim-lspconfig (**data only** — server specs, never `setup()`),
-nvim-treesitter, oil.nvim, fzf-lua, gitsigns.nvim, conform.nvim,
-mini.surround.
+Seven plugins, each because there is no native equivalent: nvim-lspconfig
+(**data only** — server specs, never `setup()`), nvim-treesitter,
+oil.nvim, fzf-lua, gitsigns.nvim, conform.nvim, mini.surround. Plus every
+colorscheme in `theme.themes` — those are taste, not machinery, which is
+why they're not in the count.
 
 Absent because the core does it: plugin manager, LSP wrapper, completion
 engine, linting framework, statusline, bufferline / tab sidebar, indent
@@ -168,8 +171,18 @@ make clean      # wipe plugins; next launch reinstalls from lockfile
 machines on identical plugin revisions.
 
 In-editor: `:Reload` (re-read settings without restarting), `:Tabs`,
-`:TabsToggle`, `:ThemeToggle`, `:FormatInfo`, `:FormatOff[!]`,
-`:FormatOn`, `:Shell`, `:ShellInfo`, `:checkhealth vim.lsp`.
+`:TabsToggle`, `:ThemesToggle` (next colorscheme), `:Theme <name>`,
+`:ThemeToggle` (light/dark), `:FormatInfo`, `:FormatOff[!]`, `:FormatOn`,
+`:Shell`, `:ShellInfo`, `:checkhealth vim.lsp`.
+
+`theme.themes` in `lua/settings.lua` is an ordered list; `:ThemesToggle`
+(`,tn`) cycles it and the choice is remembered across restarts in
+`stdpath("state")`. Two kinds of colorscheme, and the distinction is the
+only fiddly part: `options` become `vim.g.<key>` before loading (how the
+sainnhe themes are configured), `setup` is passed to
+`require(module).setup()` before loading (how Lua-configured ones like
+monokai-nightasty are). Both must happen *before* `:colorscheme`, not
+after.
 
 ## Gotchas
 
