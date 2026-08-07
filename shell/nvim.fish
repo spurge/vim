@@ -14,14 +14,25 @@
 # already sitting in.
 
 if set -q NVIM
-    # --remote-wait blocks until the buffer is closed, which is what git
-    # needs from $EDITOR.
+    # NOT `nvim --server $NVIM --remote-wait`: Neovim doesn't implement
+    # that verb and answers E5600, which git reports as "there was a
+    # problem with the editor". shell/nvim-edit builds the blocking
+    # behaviour out of --remote plus a sentinel file.
     #
-    # QUOTED deliberately. Unquoted, fish exports this as a list; git and
-    # friends parse $EDITOR as a single shell command string and break.
-    set -gx EDITOR "nvim --server $NVIM --remote-wait"
-    set -gx VISUAL "nvim --server $NVIM --remote-wait"
-    set -gx GIT_EDITOR "$EDITOR"
+    # Found via the config dir rather than this file's location, so it
+    # resolves correctly under NVIM_APPNAME too (e.g. `make try`).
+    set -l __nvim_edit (set -q XDG_CONFIG_HOME; and echo $XDG_CONFIG_HOME; or echo $HOME/.config)/(set -q NVIM_APPNAME; and echo $NVIM_APPNAME; or echo nvim)/shell/nvim-edit
+
+    if test -x "$__nvim_edit"
+        # QUOTED deliberately. Unquoted, fish exports this as a list; git
+        # parses $EDITOR as a single shell command string and breaks.
+        set -gx EDITOR "$__nvim_edit"
+        set -gx VISUAL "$__nvim_edit"
+        set -gx GIT_EDITOR "$__nvim_edit"
+    else
+        set -gx EDITOR nvim
+        set -gx VISUAL nvim
+    end
 else
     set -gx EDITOR nvim
     set -gx VISUAL nvim

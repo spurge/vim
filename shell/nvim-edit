@@ -1,0 +1,83 @@
+#!/bin/sh
+# $EDITOR for use inside a Neovim :terminal.
+#
+#   git commit  ->  the message opens as a buffer in the Neovim you are
+#                   already sitting in, and git waits until you close it.
+#
+# Why this script exists at all: Neovim does not implement --remote-wait.
+# It answers with
+#
+#   E5600: Wait commands not yet implemented in Nvim
+#
+# and git then reports "there was a problem with the editor". Blocking has
+# to be assembled from the two remote verbs that do work:
+#
+#   --remote       opens the file. It takes the path as an argument, so
+#                  there are no quoting games with spaces or quotes.
+#   --remote-expr  attaches a one-shot autocmd (see lua/core/remote.lua)
+#                  that touches a sentinel when the buffer goes away.
+#
+# Then we wait for the sentinel. Note the ordering is safe: RPC requests
+# are processed in order, so by the time the second call runs, --remote has
+# already made the file the current buffer.
+
+set -e
+
+# No parent Neovim (plain shell, ssh session, cron): just be an editor.
+if [ -z "${NVIM:-}" ]; then
+  exec nvim "$@"
+fi
+
+# Probe before committing to the remote path. If the server is gone, a
+# --remote call doesn't fail — it prints E247 and falls back to "Editing
+# locally", starting a second, nested Neovim, which is the exact thing
+# this script exists to prevent. Worse, in a non-interactive context that
+# nested editor has no terminal and hangs forever.
+if ! nvim --server "$NVIM" --remote-expr "1" >/dev/null 2>&1; then
+  exec nvim "$@"
+fi
+
+# --remote resolves a relative path against the SERVER's working directory,
+# not ours, so it would open the wrong file — or create an empty one — any
+# time the caller's cwd differs. git passes an absolute path; plenty of
+# other tools don't. Make them all absolute first.
+for arg do
+  case $arg in
+    /*) set -- "$@" "$arg" ;;
+    *)  set -- "$@" "$PWD/$arg" ;;
+  esac
+  shift
+done
+
+# --remote-tab, not --remote: --remote opens the file in the CURRENT
+# window, which is the terminal split you just typed `git commit` into. It
+# displaces the terminal, and closing the file then drops you somewhere
+# else entirely — or quits Neovim, if that was the last window. A tab
+# leaves your layout alone and :wq returns you to the terminal.
+nvim --server "$NVIM" --remote-tab "$@"
+
+sentinel="${TMPDIR:-/tmp}/nvim-edit.$$.done"
+rm -f "$sentinel"
+
+# Dropped from package.loaded first, deliberately. require() caches, so a
+# long-running Neovim that has run one `git commit` would pin that copy of
+# core.remote for the rest of its life — editing the file, or even
+# :Reload, would not dislodge it, and the only symptom is git hanging
+# forever with no error to go on. One file read per commit is nothing.
+#
+# The sentinel goes in as luaeval's second argument (_A) rather than being
+# pasted into the Lua source, so the path can't break the expression.
+nvim --server "$NVIM" --remote-expr \
+  "luaeval('(function(s) package.loaded[\"core.remote\"] = nil return require(\"core.remote\").wait(s) end)(_A)', '$sentinel')" \
+  >/dev/null
+
+# Polling, not a FIFO: writefile() into a FIFO that has no reader yet would
+# block Neovim's UI, which is a far worse failure than 100ms of latency.
+while [ ! -e "$sentinel" ]; do
+  # If the parent Neovim goes away the sentinel is never written, and git
+  # would wait forever. $NVIM is its socket, so its absence is the signal.
+  [ -S "$NVIM" ] || break
+  sleep 0.1
+done
+
+rm -f "$sentinel"

@@ -39,6 +39,10 @@ local purge = {
   "core.tabs",
   "core.sidebar",
   "core.format",
+  -- Not in `load` below: nothing requires it at startup, $EDITOR pulls it
+  -- in on demand. It still has to be purged, or an nvim that has run one
+  -- git commit keeps the old copy for the rest of its life.
+  "core.remote",
 }
 
 -- Required back, in dependency order. core.sidebar is absent on purpose:

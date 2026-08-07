@@ -135,9 +135,11 @@ lua/core/
   tabs.lua                  tab model + top tabline
   sidebar.lua               the stacked left-hand view of that model
   reload.lua                :Reload — settings changes without a restart
+  remote.lua                the waiting half of $EDITOR
 lsp/*.lua                   per-server overrides, auto-discovered
 after/ftplugin/*.lua        per-language indent
 shell/nvim.fish, nvim.sh    $NVIM handling
+shell/nvim-edit             $EDITOR that opens in the parent and blocks
 scripts/verify.lua          tool check, driven by the language registry
 mise.toml                   optional tool pinning + tasks
 ```
@@ -181,9 +183,15 @@ In-editor: `:Reload` (re-read settings without restarting), `:Tabs`,
   `shell.lua`, `terminal.lua`. Their state is live (loaded plugins,
   running clients, terminal jobs). Change those and restart.
 - **Shell integration** (`make shell-integration`) stops `$EDITOR` from
-  spawning Neovim inside Neovim. The fish snippet needs a *quoted*
-  `EDITOR` and `function`, not `alias` — both explained in
-  `shell/nvim.fish`.
+  spawning Neovim inside Neovim. It needs `function`, not `alias` — fish's
+  `alias nvim=nvim` recurses forever. See `shell/nvim.fish`.
+- **Neovim has no `--remote-wait`.** It answers `E5600: Wait commands not
+  yet implemented`, and git reports "there was a problem with the editor".
+  `$EDITOR` therefore points at `shell/nvim-edit`, which rebuilds the
+  blocking from `--remote-tab` plus a sentinel file. Don't put
+  `--remote-wait` in `$EDITOR` yourself — it has never worked. The commit
+  message opens in its own tab so `:wq` returns you to the terminal you
+  typed `git commit` in, rather than displacing it.
 - **If fzf-lua returns nothing** or a formatter silently stops, set
   `shell = { internal = "posix" }`. Plugins emit POSIX constructs fish
   rejects. `:ShellInfo` shows what's in effect.

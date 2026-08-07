@@ -7,10 +7,23 @@
 # Neovim you're already in rather than nesting a second one.
 
 if [ -n "${NVIM:-}" ]; then
-  EDITOR="nvim --server $NVIM --remote-wait"
+  # NOT `nvim --server $NVIM --remote-wait`: Neovim doesn't implement that
+  # verb and answers E5600, which git reports as "there was a problem with
+  # the editor". shell/nvim-edit builds the blocking behaviour out of
+  # --remote plus a sentinel file.
+  #
+  # Found via the config dir rather than this file's location, so it
+  # resolves correctly under NVIM_APPNAME too (e.g. `make try`).
+  __nvim_edit="${XDG_CONFIG_HOME:-$HOME/.config}/${NVIM_APPNAME:-nvim}/shell/nvim-edit"
+  if [ -x "$__nvim_edit" ]; then
+    EDITOR="$__nvim_edit"
+  else
+    EDITOR="nvim"
+  fi
   VISUAL="$EDITOR"
   GIT_EDITOR="$EDITOR"
   export EDITOR VISUAL GIT_EDITOR
+  unset __nvim_edit
 
   nvim() {
     if [ "$#" -gt 0 ]; then
