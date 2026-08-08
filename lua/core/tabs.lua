@@ -61,6 +61,13 @@ local function label(buf)
   return vim.fn.fnamemodify(name, ":t")
 end
 
+-- A name the user gave this tabpage, or nil. Tabpage-scoped, so it
+-- outlives a config reload and vanishes with the tab — no bookkeeping.
+local function tabname(tab)
+  local ok, name = pcall(vim.api.nvim_tabpage_get_var, tab, "tabname")
+  if ok and type(name) == "string" and name ~= "" then return name end
+end
+
 local function dir(buf)
   local name = vim.api.nvim_buf_get_name(buf)
   if name == "" or vim.bo[buf].buftype ~= "" then return "" end
@@ -178,6 +185,9 @@ function M.tree()
     table.sort(t.buffers, by_name)
     t.name = t.active and label(t.active) or "[No Name]"
     t.dir = t.active and dir(t.active) or ""
+    -- Kept apart from t.name: the derived label is still what the views
+    -- fall back to, and what collision detection compares.
+    t.custom = tabname(t.handle)
     t.status = aggregate(t.buffers)
     -- Only when :tcd gave the tab its own directory. The sidebar titles
     -- groups with it, which is the whole point of a per-tab cwd.
@@ -238,8 +248,11 @@ local function build(tabs, opts)
 
   for _, t in ipairs(tabs) do
     if t.handle then
-      local bits = { tostring(t.index), M.truncate(t.name, opts.name_width or 999) }
-      if opts.path and t.dir ~= "" then
+      local name = t.custom or t.name
+      local bits = { tostring(t.index), M.truncate(name, opts.name_width or 999) }
+      -- A named tab is already unambiguous; the directory would only cost
+      -- width to repeat what the name says.
+      if not t.custom and opts.path and t.dir ~= "" then
         table.insert(bits, M.truncate(t.dir, 20))
       end
       -- Monochrome per tab: the whole label takes TabLine/TabLineSel, so
@@ -278,10 +291,11 @@ function _G.NvimTabline()
 
   -- Two tabs showing different init.lua files are indistinguishable
   -- without their directories, but a directory costs width — so only pay
-  -- for it when there's an actual collision.
+  -- for it when there's an actual collision. A tab the user named is its
+  -- own disambiguation and never joins one.
   local count, collide = {}, false
   for _, t in ipairs(tabs) do
-    if t.handle then
+    if t.handle and not t.custom then
       count[t.name] = (count[t.name] or 0) + 1
       if count[t.name] > 1 then collide = true end
     end
@@ -330,6 +344,32 @@ end
 
 function M.toggle()
   M.set(M.mode == "sidebar" and "tabline" or "sidebar")
+end
+
+-- ── Naming ────────────────────────────────────────────────────────────
+
+--- Give a tabpage a name of its own, or clear it back to the active
+--- buffer's with a nil/empty one. `tab` may be 0 for the current tabpage.
+function M.rename(tab, name)
+  if name == nil or name == "" then
+    pcall(vim.api.nvim_tabpage_del_var, tab, "tabname")
+  else
+    vim.api.nvim_tabpage_set_var(tab, "tabname", name)
+  end
+  M.refresh()
+end
+
+--- Ask for a name, pre-filled with the current one so it can be edited
+--- rather than retyped.
+function M.rename_prompt(tab)
+  if tab == 0 then tab = vim.api.nvim_get_current_tabpage() end
+  if not vim.api.nvim_tabpage_is_valid(tab) then return end
+  vim.ui.input({ prompt = "Tab name: ", default = tabname(tab) or "" }, function(input)
+    -- nil is <Esc> — leave the name alone. An empty submission is a
+    -- deliberate clear.
+    if input == nil then return end
+    M.rename(tab, vim.trim(input))
+  end)
 end
 
 --- Called by :Reload before this module is thrown away. The sidebar's
@@ -402,6 +442,16 @@ end, {
 vim.api.nvim_create_user_command("TabsToggle", function()
   M.toggle()
 end, { desc = "tabs: toggle sidebar / tabline" })
+
+vim.api.nvim_create_user_command("TabRename", function(o)
+  if o.bang then
+    M.rename(0, nil)
+  elseif o.args ~= "" then
+    M.rename(0, o.args)
+  else
+    M.rename_prompt(0)
+  end
+end, { nargs = "?", bang = true, desc = "tabs: name the current tab (! clears)" })
 
 vim.o.tabline = "%!v:lua.NvimTabline()"
 

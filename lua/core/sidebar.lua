@@ -136,7 +136,19 @@ local function keymaps(buf)
   -- it, so the mouse shares the <CR> path. Buffer-local, so it can't
   -- change what a click does in any other window.
   map("<LeftRelease>", here(activate), "sidebar: open (click)")
-  map("<2-LeftMouse>", here(activate), "sidebar: open (double click)")
+  -- A double click arrives as LeftRelease then 2-LeftMouse, so on a tab
+  -- header the single-click fold has already fired — and redrawn — by the
+  -- time we get here. Read the action before undoing that fold: the redraw
+  -- moved the line numbers underneath us.
+  map("<2-LeftMouse>", here(function(line)
+    local a = meta[line]
+    if a and a.kind == "tab" and a.tab then
+      fold(a.key)
+      tabs().rename_prompt(a.tab)
+    else
+      activate(line)
+    end
+  end), "sidebar: rename tab / open (double click)")
 
   map("<Tab>", here(function(l) fold(meta[l] and meta[l].key) end), "sidebar: fold group")
   map("za", here(function(l) fold(meta[l] and meta[l].key) end), "sidebar: fold group")
@@ -245,13 +257,18 @@ local function draw()
     local key = t.handle or "hidden"
     local open = not collapsed[key]
 
-    -- Expanded, naming the group after its active buffer would just
-    -- repeat the row below it — so title it by the tab instead, and by
-    -- its :tcd directory when it has one. Collapsed, the active buffer is
-    -- exactly what you want to see: it's the only clue to what's inside.
+    -- A name the user chose says more than anything derivable, so it
+    -- takes the title outright, open or shut, :tcd directory and all.
+    -- Failing that: expanded, naming the group after its active buffer
+    -- would just repeat the row below it — so title it by the tab
+    -- instead, and by its :tcd directory when it has one. Collapsed, the
+    -- active buffer is exactly what you want to see: it's the only clue
+    -- to what's inside.
     local head
     if not t.handle then
       head = t.name
+    elseif t.custom then
+      head = ("%d  %s"):format(t.index, t.custom)
     elseif open then
       head = ("Tab %d%s"):format(t.index, t.cwd and ("  " .. t.cwd) or "")
     else

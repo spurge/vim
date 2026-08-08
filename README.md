@@ -114,8 +114,8 @@ Mostly Neovim 0.11+ defaults, which need no configuration:
 | `\y` `\p`               | system clipboard (when `clipboard = "explicit"`) |
 
 Commenting is native since 0.10: `gcc`, `gc{motion}`, `gbc`. In the
-sidebar: `<CR>` or click opens, `<Tab>` folds a tab group, `d` deletes a
-buffer, `q` returns to the tabline.
+sidebar: `<CR>` or click opens, `<Tab>` folds a tab group, double-clicking
+a tab header renames it, `d` deletes a buffer, `q` returns to the tabline.
 
 ## Layout
 
@@ -171,7 +171,8 @@ make clean      # wipe plugins; next launch reinstalls from lockfile
 machines on identical plugin revisions.
 
 In-editor: `:Reload` (re-read settings without restarting), `:Tabs`,
-`:TabsToggle`, `:ThemesToggle` (next colorscheme), `:Theme <name>`,
+`:TabsToggle`, `:TabRename [name]` (`!` clears it), `:ThemesToggle`
+(next colorscheme), `:Theme <name>`,
 `:ThemeToggle` (light/dark), `:FormatInfo`, `:FormatOff[!]`, `:FormatOn`,
 `:Shell`, `:ShellInfo`, `:checkhealth vim.lsp`.
 

@@ -87,6 +87,14 @@ return {
           terminal_colors = true,
         },
       },
+      {
+        plugin = "https://github.com/sainnhe/everforest",
+        colorscheme = "everforest",
+        options = {
+          everforest_background = 'medium',
+          everforest_better_performance = 1,
+        },
+      },
     },
 
     -- Follow the OS light/dark setting automatically. Requires a terminal
