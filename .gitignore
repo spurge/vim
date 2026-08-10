@@ -1,3 +1,7 @@
+# Machine-specific overrides, merged over lua/settings.lua. The README
+# promises this is ignored; make that true.
+lua/settings_local.lua
+
 autoload/pathogen.vim
 .init.vim-rplugin~
 .netrwhist

@@ -29,6 +29,7 @@ require("core.shell")       -- which shell for :terminal vs for system()
 require("core.lsp")         -- native vim.lsp
 require("core.terminal")    -- terminal mode escape, nesting, agent splits
 require("core.format")      -- format on save
+require("core.claude")      -- Claude Code rate limits + notifications
 require("core.statusline")  -- native statusline
 require("core.tabs")        -- tabline / stacked sidebar, one model both ways
 require("core.reload")      -- :Reload, for settings changes without a restart

@@ -35,6 +35,7 @@ local purge = {
   "core.options",
   "core.keymaps",
   "core.theme",
+  "core.claude",
   "core.statusline",
   "core.tabs",
   "core.sidebar",
@@ -51,6 +52,8 @@ local load = {
   "core.options",
   "core.keymaps",
   "core.theme",
+  -- Before core.statusline, which requires it.
+  "core.claude",
   "core.statusline",
   "core.tabs",
   "core.format",

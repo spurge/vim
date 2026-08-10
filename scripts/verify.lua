@@ -115,6 +115,31 @@ for _, lang in ipairs(order) do
   end
 end
 
+-- ── Claude Code ───────────────────────────────────────────────────────
+-- All optional. The statusline segment degrades to showing nothing, which
+-- is exactly what someone who doesn't use Claude Code wants anyway.
+if (config.claude or {}).enabled ~= false then
+  out()
+  out(bold("Claude Code"))
+  report({
+    bin = "claude",
+    purpose = "the agent behind ,cc and the rate-limit segment",
+    hint = "optional — https://claude.com/claude-code",
+  }, false)
+  report({
+    bin = "jq",
+    purpose = "formats the hook scripts' output and ~/.claude/settings.json",
+    hint = "optional — brew install jq",
+  }, false)
+  if vim.fn.has("mac") == 1 then
+    report({
+      bin = "terminal-notifier",
+      purpose = "clickable notifications; osascript is used without it",
+      hint = "optional — brew install terminal-notifier",
+    }, false)
+  end
+end
+
 -- ── Shell integration ─────────────────────────────────────────────────
 out()
 out(bold("Shell"))

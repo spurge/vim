@@ -46,6 +46,13 @@ local defaults = {
     show_git = true,
     show_diagnostics = true,
   },
+  claude = {
+    enabled = true,
+    statusline = true,
+    notify = true,
+    interval = 30,
+    stale_after = 1800,
+  },
   format_on_save = true,
   spell = { "en_us" },
   extra_plugins = {},

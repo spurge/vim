@@ -41,6 +41,7 @@ return {
   theme = { follow_system = true },        -- plus a `themes` list to cycle
   tabs = { display = "sidebar" },          -- or "tabline"
   terminal = { agent = "claude" },
+  claude = { enabled = true },             -- rate limits + notifications
 }
 ```
 
@@ -113,6 +114,33 @@ Mostly Neovim 0.11+ defaults, which need no configuration:
 | `,tt` `,tn`             | toggle light/dark / next colorscheme             |
 | `\y` `\p`               | system clipboard (when `clipboard = "explicit"`) |
 
+## Claude Code
+
+On by default; `claude = { enabled = false }` in `lua/settings.lua` turns the
+whole thing off. **No API key, ever** — both halves read what Claude Code
+already writes under the auth of the session you're logged into.
+
+**Rate limits in the statusline.** `5h 24% ⟳2h13m  7d 41%` — the rolling
+session window with the time until it clears, and the weekly one. Amber past
+75%, red past 90%. Two windows and not three because that is what Anthropic
+reports; there is no monthly quota to show.
+
+**A notification when a turn ends** or when Claude wants permission — the same
+information you'd otherwise get by watching the `,cc` split.
+
+The statusline half works on its own, reading `cachedUsageUtilization` from
+`~/.claude.json`. For live numbers and for notifications, run **`:ClaudeSetup`**
+once. It adds three entries to `~/.claude/settings.json` — a `statusLine`
+command and two hooks, all pointing at `claude/*.sh` in this repo — after
+showing you exactly what it will add and backing the file up. Everything else in
+there is left alone. `:ClaudeSetup!` takes them out again.
+
+`:ClaudeUsage` prints the current numbers, which of the two sources they came
+from and how old they are — start there if the segment is empty.
+
+`jq` and `terminal-notifier` are both optional, and only make the output
+prettier. Nothing here is a required dependency.
+
 Commenting is native since 0.10: `gcc`, `gc{motion}`, `gbc`. In the
 sidebar: `<CR>` or click opens, `<Tab>` folds a tab group, double-clicking
 a tab header renames it, `d` deletes a buffer, `q` returns to the tabline.
@@ -136,8 +164,11 @@ lua/core/
   statusline.lua            native statusline
   tabs.lua                  tab model + top tabline
   sidebar.lua               the stacked left-hand view of that model
+  claude.lua                Claude Code rate limits + :ClaudeSetup
   reload.lua                :Reload — settings changes without a restart
   remote.lua                the waiting half of $EDITOR
+claude/statusline.sh        Claude Code's statusLine command; tees its JSON
+claude/notify.sh            the Stop / Notification hook handler
 lsp/*.lua                   per-server overrides, auto-discovered
 after/ftplugin/*.lua        per-language indent
 shell/nvim.fish, nvim.sh    $NVIM handling
@@ -174,7 +205,8 @@ In-editor: `:Reload` (re-read settings without restarting), `:Tabs`,
 `:TabsToggle`, `:TabRename [name]` (`!` clears it), `:ThemesToggle`
 (next colorscheme), `:Theme <name>`,
 `:ThemeToggle` (light/dark), `:FormatInfo`, `:FormatOff[!]`, `:FormatOn`,
-`:Shell`, `:ShellInfo`, `:checkhealth vim.lsp`.
+`:Shell`, `:ShellInfo`, `:ClaudeSetup[!]`, `:ClaudeUsage`,
+`:checkhealth vim.lsp`.
 
 `theme.themes` in `lua/settings.lua` is an ordered list; `:ThemesToggle`
 (`,tn`) cycles it and the choice is remembered across restarts in
@@ -209,6 +241,12 @@ after.
 - **If fzf-lua returns nothing** or a formatter silently stops, set
   `shell = { internal = "posix" }`. Plugins emit POSIX constructs fish
   rejects. `:ShellInfo` shows what's in effect.
+- **The Claude Code rate-limit segment can legitimately be empty.** Anthropic
+  reports `rate_limits` only for Claude.ai Pro/Max, and only once a session has
+  made a request — an API-key or Bedrock setup has nothing to show. It also
+  disappears rather than freezing when the data goes stale (`stale_after`,
+  default 30 min), because a percentage from an expired window is worse than no
+  percentage. `:ClaudeUsage` says which case you're in.
 - **Terragrunt / Swift / Kotlin** language servers are all partial:
   `terragrunt-ls` is an early WIP, `sourcekit-lsp` needs a
   `Package.swift`, `kotlin-lsp` is JetBrains-internal and incomplete for
@@ -216,4 +254,4 @@ after.
 
 ## License
 
-See `LICENSE`.
+MIT — see `LICENSE`.

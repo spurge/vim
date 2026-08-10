@@ -3,6 +3,10 @@
 --
 -- Recomputed on every redraw, so everything here stays cheap: no shelling
 -- out, no git calls (gitsigns already puts the branch in a buffer var).
+-- core.claude follows the same rule: it polls on a timer and hands back a
+-- string it prepared earlier.
+
+local claude = require("core.claude")
 
 local modes = {
   n = "NORMAL", no = "OP-PEND", nov = "OP-PEND", noV = "OP-PEND",
@@ -63,9 +67,14 @@ function _G.NvimStatusline()
     "%*",
   })
 
+  -- Empty unless Claude Code has reported a rate limit recently, so this
+  -- costs nothing to anyone who doesn't use it.
+  local usage = claude.statusline()
+
   local right = table.concat({
     "%#DiagnosticError#", diagnostics(), "%*",
     " %#Comment#", flags(), " ", clients(), "%*",
+    usage ~= "" and ("  " .. usage) or "",
     "  %{&filetype}",
     "  %{&fileformat}",
     "  %l:%c",

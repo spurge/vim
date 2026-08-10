@@ -120,6 +120,10 @@ if command -v stylua >/dev/null 2>&1; then stylua --check . || fail=1; else echo
 echo "==> shell"
 command -v fish >/dev/null 2>&1 && fish --no-execute shell/nvim.fish && echo "  nvim.fish ok"
 sh -n shell/nvim.sh && echo "  nvim.sh ok"
+for f in claude/*.sh; do
+  sh -n "$f" && echo "  $(basename "$f") ok" || fail=1
+  [ -x "$f" ] || { echo "  FAIL $f is not executable"; fail=1; }
+done
 
 echo "==> config loads"
 nvim --headless -c 'lua require("core.config")' -c qa && echo "  core.config ok"

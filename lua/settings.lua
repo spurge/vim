@@ -180,6 +180,30 @@ return {
     show_diagnostics = true, -- ✖errors ⚠warnings, from the LSP
   },
 
+  -- ── Claude Code ─────────────────────────────────────────────────────
+  -- Rate limits in the statusline, and a desktop notification when Claude
+  -- finishes or wants something. Nothing here needs an API key: both
+  -- halves read what Claude Code already writes, under the auth of the
+  -- session you're already logged into.
+  --
+  -- The statusline half works on its own. The notification half needs one
+  -- entry in ~/.claude/settings.json, which lives outside this repo — run
+  -- :ClaudeSetup once and it adds it (and shows you what it's adding).
+  --
+  -- Two windows, because that's what Anthropic reports: `5h` is the
+  -- rolling session window with the time until it clears, `7d` is the
+  -- weekly one. There is no monthly quota to show. Both appear only for
+  -- Claude.ai Pro/Max, and only once a session has made a request.
+  claude = {
+    enabled = true,     -- the master switch for both halves
+    statusline = true,  -- the 5h / 7d segment
+    notify = true,      -- banner when a turn ends or needs you
+    interval = 30,      -- seconds between checks; nothing runs on redraw
+    stale_after = 1800, -- drop the segment once the data is this old,
+                        -- rather than showing a number that has stopped
+                        -- being true
+  },
+
   -- ── Behaviour ───────────────────────────────────────────────────────
   format_on_save = true,
   spell = { "en_us" }, -- add your own, e.g. { "en_us", "sv", "de" }
