@@ -19,6 +19,10 @@ if config.clipboard == "explicit" then
   map({ "n", "x" }, p .. "y", '"+y', { desc = "yank to system clipboard" })
   map("n", p .. "yy", '"+yy', { desc = "yank line to system clipboard" })
   map("n", p .. "Y", '"+yg_', { desc = "yank to EOL to system clipboard" })
+  -- Visual mode has no "to end of line" motion to apply, so Y here is just
+  -- y. Mapped anyway: without it, prefix+Y falls through to plain Y and
+  -- yanks to the unnamed register, which looks like it worked.
+  map("x", p .. "Y", '"+y', { desc = "yank selection to system clipboard" })
   map({ "n", "x" }, p .. "p", '"+p', { desc = "paste from system clipboard" })
   map({ "n", "x" }, p .. "P", '"+P', { desc = "paste before from system clipboard" })
 end

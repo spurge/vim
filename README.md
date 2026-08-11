@@ -37,7 +37,7 @@ not need to edit anything under `lua/core/`.
 return {
   languages = { "go", "python", "lua" },   -- the master switch
   leader = ",",
-  clipboard = "explicit",                  -- y/p local, \y/\p system
+  clipboard = "explicit",                  -- y/p local, ,cy/,cp system
   theme = { follow_system = true },        -- plus a `themes` list to cycle
   tabs = { display = "sidebar" },          -- or "tabline"
   terminal = { agent = "claude" },
@@ -62,8 +62,11 @@ the editor — `make verify` prints the exact command for each missing one.
 
 ## Keymaps
 
-Leader is `,`. Where a table says `\`, that's `clipboard_prefix` — a
-literal prefix, not leader, so `,p` (tab prev) and `\p` (paste) coexist.
+Leader is `,`. Where a table says `,c`, that's `clipboard_prefix`, set in
+`settings.lua`. It takes any lhs a mapping does, `<Leader>` included — pick
+something your layout can actually type. The vim-default `\` is
+Option+Shift+7 on a Swedish Mac and is eaten outright by terminals that
+map Option to Meta.
 
 ### Files, search, windows
 
@@ -112,7 +115,7 @@ Mostly Neovim 0.11+ defaults, which need no configuration:
 | `,cc` `,cv` `,cf`       | agent toggle / vertical / send file path         |
 | `,F`                    | format buffer or selection                       |
 | `,tt` `,tn`             | toggle light/dark / next colorscheme             |
-| `\y` `\p`               | system clipboard (when `clipboard = "explicit"`) |
+| `,cy` `,cp` `,cP`       | system clipboard (when `clipboard = "explicit"`) |
 
 ## Claude Code
 
