@@ -1,6 +1,5 @@
 -- Keymaps. Leader comes from settings.leader.
 
-local config = require("core.config")
 local map = vim.keymap.set
 
 -- ── Tabs ──────────────────────────────────────────────────────────────
@@ -11,21 +10,8 @@ map("n", "<Leader><Tab>", "<Cmd>tabnext<CR>", { desc = "tab: next" })
 map("n", "<Leader>T", "<Cmd>tabclose<CR>", { desc = "tab: close" })
 map("n", "<Leader>B", "<Cmd>TabsToggle<CR>", { desc = "tab: stacked sidebar / top tabline" })
 
--- ── Clipboard ─────────────────────────────────────────────────────────
--- settings.clipboard = "system" makes plain y/p use the system clipboard
--- instead, in which case there's nothing to map here.
-if config.clipboard == "explicit" then
-  local p = config.clipboard_prefix
-  map({ "n", "x" }, p .. "y", '"+y', { desc = "yank to system clipboard" })
-  map("n", p .. "yy", '"+yy', { desc = "yank line to system clipboard" })
-  map("n", p .. "Y", '"+yg_', { desc = "yank to EOL to system clipboard" })
-  -- Visual mode has no "to end of line" motion to apply, so Y here is just
-  -- y. Mapped anyway: without it, prefix+Y falls through to plain Y and
-  -- yanks to the unnamed register, which looks like it worked.
-  map("x", p .. "Y", '"+y', { desc = "yank selection to system clipboard" })
-  map({ "n", "x" }, p .. "p", '"+p', { desc = "paste from system clipboard" })
-  map({ "n", "x" }, p .. "P", '"+P', { desc = "paste before from system clipboard" })
-end
+-- Clipboard: nothing to map. 'clipboard' is unnamedplus (options.lua), so
+-- plain y and p ARE the system clipboard.
 
 -- ── File explorer ─────────────────────────────────────────────────────
 map("n", "<C-n>", "<Cmd>Oil<CR>", { desc = "file explorer" })

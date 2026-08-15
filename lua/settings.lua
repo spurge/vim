@@ -43,17 +43,6 @@ return {
   leader = ",",
   localleader = ",",
 
-  -- ── Clipboard ───────────────────────────────────────────────────────
-  --   "explicit"  y/p stay register-local; prefix+y / prefix+p use the
-  --               system clipboard. Keeps the two deliberately separate.
-  --   "system"    plain y and p go straight to the system clipboard
-  --               (sets clipboard=unnamedplus). Simpler, less control.
-  clipboard = "explicit",
-  -- Only used when clipboard = "explicit". Avoid '\' on an ISO layout —
-  -- it's Option+Shift+7 on a Swedish Mac, and terminals that map Option
-  -- to Meta swallow it entirely. A leader chord is always reachable.
-  clipboard_prefix = "<Leader>c",
-
   -- ── Theme ───────────────────────────────────────────────────────────
   theme = {
     -- Cycled by :ThemesToggle (<Leader>tn), in this order. :Theme <name>

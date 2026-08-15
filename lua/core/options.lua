@@ -79,9 +79,10 @@ o.ttimeoutlen = 10
 o.updatetime = 250
 
 -- ── Misc ──────────────────────────────────────────────────────────────
--- clipboard=unnamedplus only when settings.clipboard is "system";
--- "explicit" keeps y/p register-local with prefixed system variants.
-o.clipboard = config.clipboard == "system" and "unnamedplus" or ""
+-- y and p are the system clipboard, always. No second, register-local way
+-- of copying and no prefixed variants — one path, so there's nothing to
+-- remember. Deletes go through it too; "0p still has the last yank.
+o.clipboard = "unnamedplus"
 o.spelllang = config.spell
 o.encoding = "utf-8"
 o.fileencoding = "utf-8"

@@ -37,7 +37,6 @@ not need to edit anything under `lua/core/`.
 return {
   languages = { "go", "python", "lua" },   -- the master switch
   leader = ",",
-  clipboard = "explicit",                  -- y/p local, ,cy/,cp system
   theme = { follow_system = true },        -- plus a `themes` list to cycle
   tabs = { display = "sidebar" },          -- or "tabline"
   terminal = { agent = "claude" },
@@ -62,11 +61,12 @@ the editor — `make verify` prints the exact command for each missing one.
 
 ## Keymaps
 
-Leader is `,`. Where a table says `,c`, that's `clipboard_prefix`, set in
-`settings.lua`. It takes any lhs a mapping does, `<Leader>` included — pick
-something your layout can actually type. The vim-default `\` is
-Option+Shift+7 on a Swedish Mac and is eaten outright by terminals that
-map Option to Meta.
+Leader is `,`, set in `settings.lua`.
+
+There is no clipboard section here, and that's deliberate: `clipboard` is
+`unnamedplus`, so plain `y` and `p` are the system clipboard. One way to
+copy, one way to paste, nothing to configure. Deletes go through it too —
+`"0p` still pastes the last yank when a `d` has overwritten it.
 
 ### Files, search, windows
 
@@ -104,18 +104,17 @@ Mostly Neovim 0.11+ defaults, which need no configuration:
 
 ### Git, terminal, misc
 
-| Key                     | Action                                           |
-|-------------------------|--------------------------------------------------|
-| `]c` `[c`               | next / prev hunk                                 |
-| `,hp` `,hs` `,hr` `,hb` | hunk preview / stage / reset / blame             |
-| `,vs` `,vb` `,vl`       | git status / branches / log                      |
-| `<C-Space>`             | leave terminal mode                              |
-| `,E`                    | toggle terminal escape passthrough               |
-| `,cs` `,cV`             | shell split / vertical shell split               |
-| `,cc` `,cv` `,cf`       | agent toggle / vertical / send file path         |
-| `,F`                    | format buffer or selection                       |
-| `,tt` `,tn`             | toggle light/dark / next colorscheme             |
-| `,cy` `,cp` `,cP`       | system clipboard (when `clipboard = "explicit"`) |
+| Key                     | Action                                   |
+|-------------------------|------------------------------------------|
+| `]c` `[c`               | next / prev hunk                         |
+| `,hp` `,hs` `,hr` `,hb` | hunk preview / stage / reset / blame     |
+| `,vs` `,vb` `,vl`       | git status / branches / log              |
+| `<C-Space>`             | leave terminal mode                      |
+| `,E`                    | toggle terminal escape passthrough       |
+| `,cs` `,cV`             | shell split / vertical shell split       |
+| `,cc` `,cv` `,cf`       | agent toggle / vertical / send file path |
+| `,F`                    | format buffer or selection               |
+| `,tt` `,tn`             | toggle light/dark / next colorscheme     |
 
 ## Claude Code
 

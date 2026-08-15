@@ -16,8 +16,6 @@ local defaults = {
   languages = { "lua", "markdown", "bash", "json", "yaml", "toml" },
   leader = ",",
   localleader = ",",
-  clipboard = "explicit",
-  clipboard_prefix = "<Leader>c",
   theme = {
     -- An ordered list; :ThemesToggle cycles it. One entry is a perfectly
     -- good list.
