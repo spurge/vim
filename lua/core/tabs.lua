@@ -206,6 +206,38 @@ function M.tree()
   return tabs
 end
 
+--- The listed buffers a tabpage owns — the ones tree() files under it even
+--- though no window is holding them. `except` drops one, for the caller
+--- that just watched a window close and must not reopen what it closed.
+--- Most recently used first: falling back should hand you the file you were
+--- on before this one, not the lowest buffer number.
+function M.owned(tab, except)
+  if tab == nil or tab == 0 then tab = vim.api.nvim_get_current_tabpage() end
+  local out, used = {}, {}
+  for buf, home in pairs(owner) do
+    if home == tab and buf ~= except and listed(buf) then table.insert(out, buf) end
+  end
+  for _, i in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do used[i.bufnr] = i.lastused or 0 end
+  table.sort(out, function(a, b) return (used[a] or 0) > (used[b] or 0) end)
+  return out
+end
+
+--- Forget which tabpage a buffer belongs to, so it lists under "Hidden"
+--- instead of a tab that no longer shows it. Closing a window on purpose is
+--- the one moment that's true: merely navigating away keeps the buffer in
+--- place, which is the whole point of `owner` above.
+--- `from` is the tabpage the caller saw owning it. The check matters because
+--- this runs deferred: between the window closing and now, the buffer may
+--- have been opened somewhere else, and that newer home must win.
+function M.dismiss(buf, from)
+  if from and owner[buf] ~= from then return end
+  owner[buf] = nil
+  -- The views already redrew for the WinClosed that brought us here, before
+  -- this ran — without a second pass the buffer keeps its old group until
+  -- something unrelated happens to trigger one.
+  M.refresh()
+end
+
 -- ── Shared formatting ─────────────────────────────────────────────────
 
 --- Status atoms for one buffer or one tabpage, most important first, as
@@ -372,6 +404,75 @@ function M.rename_prompt(tab)
   end)
 end
 
+-- ── Moving windows between tabs ────────────────────────────────────────
+
+-- Vim can move a window to a NEW tabpage (<C-w>T) but not to one that
+-- already exists, and the manual dance — note the buffer, close the window,
+-- switch tab, :sbuffer — loses the cursor and the scroll position on the way.
+
+--- A tabpage from an index or from the name one was given, so `:WinMoveTab 2`
+--- and `:WinMoveTab review` both work.
+local function resolve(where)
+  local tabs = vim.api.nvim_list_tabpages()
+  local n = tonumber(where)
+  if n then return tabs[n] end
+  for _, tab in ipairs(tabs) do
+    if tabname(tab) == where then return tab end
+  end
+end
+
+local function refuse(msg)
+  vim.notify("WinMoveTab: " .. msg, vim.log.levels.WARN)
+end
+
+--- Move the current window to another tabpage, keeping its view, and follow
+--- it there. `vertical` splits the target beside its current window instead
+--- of above it.
+function M.move_window(where, vertical)
+  local src = vim.api.nvim_get_current_win()
+  local buf = vim.api.nvim_win_get_buf(src)
+  local from = vim.api.nvim_get_current_tabpage()
+
+  if vim.api.nvim_win_get_config(src).relative ~= "" then
+    return refuse("that's a floating window")
+  end
+  if vim.b[buf].core_sidebar then
+    return refuse("that's the sidebar, not a file window")
+  end
+  local target = resolve(where)
+  if not target then return refuse(("no tab %q"):format(tostring(where))) end
+  if target == from then return refuse("already in that tab") end
+
+  local view = vim.fn.winsaveview()
+
+  -- Land the buffer in the target before closing the source window: if
+  -- anything here fails there is still a window showing the file.
+  vim.api.nvim_set_current_tabpage(target)
+  local host = sidebar().content_wins(0)[1]
+  if host then
+    vim.api.nvim_set_current_win(host)
+    vim.cmd(vertical and "vsplit" or "split")
+    vim.api.nvim_win_set_buf(0, buf)
+  else
+    -- Nothing but a sidebar to split off, whose options are wrong for a file
+    -- window. Setting the buffer is what fixes them — see refill() in
+    -- sidebar.lua for why that works.
+    vim.cmd("botright vsplit")
+    local win = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_set_buf(win, buf)
+    vim.wo[win].winfixwidth = false
+  end
+  vim.fn.winrestview(view)
+
+  -- The source tab may now be down to its sidebar. The WinClosed handler in
+  -- sidebar.lua takes it from there: another of that tab's buffers, or the
+  -- tab itself if it has none.
+  if vim.api.nvim_win_is_valid(src) then
+    pcall(vim.api.nvim_win_close, src, false)
+  end
+  M.refresh()
+end
+
 --- Called by :Reload before this module is thrown away. The sidebar's
 --- windows are only reachable through this incarnation, so they have to
 --- go now — otherwise the next one splits a second sidebar beside them.
@@ -431,6 +532,26 @@ vim.api.nvim_create_autocmd("BufDelete", {
   callback = function(ev) owner[ev.buf] = nil end,
 })
 
+-- A closed tabpage leaves every buffer it owned pointing at a dead handle,
+-- and tree() can only file those under "Hidden" — so closing one tab makes
+-- unrelated buffers look homeless, permanently, since nothing ever clears a
+-- stale owner. They didn't go anywhere; the tab did. Hand them to the
+-- tabpage you land in, which is where you'd look for them.
+vim.api.nvim_create_autocmd("TabClosed", {
+  group = group,
+  callback = function()
+    vim.schedule(function()
+      local live = {}
+      for _, tab in ipairs(vim.api.nvim_list_tabpages()) do live[tab] = true end
+      local cur = vim.api.nvim_get_current_tabpage()
+      for buf, tab in pairs(owner) do
+        if not live[tab] then owner[buf] = cur end
+      end
+      M.refresh()
+    end)
+  end,
+})
+
 vim.api.nvim_create_user_command("Tabs", function(o)
   M.set(o.args ~= "" and o.args or M.mode)
 end, {
@@ -452,6 +573,23 @@ vim.api.nvim_create_user_command("TabRename", function(o)
     M.rename_prompt(0)
   end
 end, { nargs = "?", bang = true, desc = "tabs: name the current tab (! clears)" })
+
+vim.api.nvim_create_user_command("WinMoveTab", function(o)
+  M.move_window(o.args, o.bang)
+end, {
+  nargs = 1,
+  bang = true,
+  complete = function()
+    local out = {}
+    for i, tab in ipairs(vim.api.nvim_list_tabpages()) do
+      table.insert(out, tostring(i))
+      local name = tabname(tab)
+      if name then table.insert(out, name) end
+    end
+    return out
+  end,
+  desc = "window: move to tab by index or name (! splits vertically)",
+})
 
 vim.o.tabline = "%!v:lua.NvimTabline()"
 

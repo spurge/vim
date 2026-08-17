@@ -47,14 +47,25 @@ local function sidebar_wins(tab)
   return out
 end
 
---- The window a chosen buffer should be loaded into: the first ordinary,
---- non-floating window of the current tabpage.
-local function content_win()
-  for _, w in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+--- The ordinary windows of a tabpage: not the sidebar, not floating. This
+--- is what "the windows in this tab" has to mean everywhere, because the
+--- sidebar is a real window and Vim's own counts include it — which is how
+--- <C-w>T comes to move the only window in a tab (see the wrapper in
+--- keymaps.lua) and how the guard at the bottom of this file decides a
+--- tabpage has nothing left in it.
+function M.content_wins(tab)
+  local out = {}
+  for _, w in ipairs(vim.api.nvim_tabpage_list_wins(tab or 0)) do
     if not is_sidebar(w) and vim.api.nvim_win_get_config(w).relative == "" then
-      return w
+      table.insert(out, w)
     end
   end
+  return out
+end
+
+--- The window a chosen buffer should be loaded into.
+local function content_win()
+  return M.content_wins(0)[1]
 end
 
 -- Creating and populating the window fires BufEnter/WinEnter, which route
@@ -101,6 +112,44 @@ local function activate(line)
   end
 end
 
+--- The buffer a window should fall back to once we take its current one
+--- away: the most recently used listed buffer, so the window lands on
+--- whatever you were looking at before rather than somewhere arbitrary.
+local function fallback(buf)
+  local best, used = nil, -1
+  for _, info in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
+    if info.bufnr ~= buf and vim.api.nvim_buf_is_valid(info.bufnr) and (info.lastused or 0) > used then
+      best, used = info.bufnr, info.lastused or 0
+    end
+  end
+  -- Nothing left to show. An empty listed buffer is what :enew would give
+  -- you, and what Vim itself falls back to when you delete the last file.
+  return best or vim.api.nvim_create_buf(true, false)
+end
+
+--- Move every window showing `buf` — in any tabpage — onto another buffer.
+--- Both :bdelete and nvim_buf_delete() CLOSE the windows displaying a
+--- buffer instead of re-pointing them, and a closed window is how deleting
+--- an entry from this list ends up destroying a whole tabpage: take the
+--- last content window and the sidebar is left alone, at which point the
+--- WinClosed handler at the bottom of this file runs :tabclose (or :quit,
+--- in a single-tab session). Empty the windows first and the delete becomes
+--- what it looks like — one line leaving a list.
+local function evict(buf)
+  local wins = {}
+  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+    for _, w in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+      if vim.api.nvim_win_get_buf(w) == buf then table.insert(wins, w) end
+    end
+  end
+  if #wins == 0 then return end
+
+  local repl = fallback(buf)
+  for _, w in ipairs(wins) do
+    pcall(vim.api.nvim_win_set_buf, w, repl)
+  end
+end
+
 local function delete(line)
   local a = meta[line]
   if not a or a.kind ~= "buf" or not vim.api.nvim_buf_is_valid(a.buf) then return end
@@ -119,8 +168,20 @@ local function delete(line)
     end
   end
 
+  evict(a.buf)
   pcall(vim.api.nvim_buf_delete, a.buf, { force = true })
   M.render()
+
+  -- The redraw above shortened the list under the cursor. Leaving it past
+  -- the last line means the next `d` reads a stale action — which is the
+  -- other half of how a run of deletes wanders off the entries you meant
+  -- into ones you didn't.
+  local win = vim.api.nvim_get_current_win()
+  if is_sidebar(win) then
+    local last = vim.api.nvim_buf_line_count(view)
+    local row = math.min(vim.api.nvim_win_get_cursor(win)[1], last)
+    pcall(vim.api.nvim_win_set_cursor, win, { math.max(row, 1), 0 })
+  end
 end
 
 local function keymaps(buf)
@@ -361,23 +422,103 @@ function M.close()
   end
 end
 
+--- Is this buffer on screen anywhere at all?
+local function anywhere(buf)
+  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+    for _, w in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+      if vim.api.nvim_win_get_buf(w) == buf then return true end
+    end
+  end
+  return false
+end
+
+--- Give the tabpage a content window back, showing something it still owns.
+--- False when it owns nothing more, which is the caller's cue that the tab
+--- is genuinely finished and may be closed.
+local function refill(except)
+  local buf = tabs().owned(0, except)[1]
+  if not buf then return false end
+  noauto(function()
+    vim.cmd("botright vsplit")
+    local win = vim.api.nvim_get_current_win()
+    -- The split comes off the sidebar and inherits its options, which switch
+    -- off nearly everything a file window wants. Putting a real buffer in
+    -- undoes that by itself: Neovim keeps window options per buffer, and
+    -- every candidate here was displayed in an ordinary window once, which is
+    -- how it came to be owned. Measured identical to a normal window
+    -- afterwards — except 'winfixwidth', which no buffer remembers.
+    vim.api.nvim_win_set_buf(win, buf)
+    vim.wo[win].winfixwidth = false
+    local sw = sidebar_wins(0)[1]
+    if sw then vim.api.nvim_win_set_width(sw, config.tabs.width) end
+  end)
+  M.render()
+  return true
+end
+
+--- Settle a tabpage that may have just lost its last content window: give it
+--- another of its buffers, or close it. `tab` need not be the one we're
+--- standing in — a window can die in a tab we've already left, which is what
+--- :WinMoveTab does — so step over there and come back.
+local function tidy(tab, except)
+  if not vim.api.nvim_tabpage_is_valid(tab) then return end
+  if #M.content_wins(tab) > 0 or #sidebar_wins(tab) == 0 then return end
+
+  local here = vim.api.nvim_get_current_tabpage()
+  local away = tab ~= here
+  if away then vim.api.nvim_set_current_tabpage(tab) end
+  if not refill(except) then
+    -- Deliberately not inside noauto(): TabClosed is what re-homes this
+    -- tab's buffers in tabs.lua, and suppressing it would drop them all
+    -- into "Hidden".
+    vim.cmd(#vim.api.nvim_list_tabpages() > 1 and "tabclose" or "quit")
+  end
+  if away and vim.api.nvim_tabpage_is_valid(here) then
+    vim.api.nvim_set_current_tabpage(here)
+  end
+end
+
 -- Never let the sidebar be the only thing holding a tabpage open — with
--- nothing else to switch to, :q on the last real window would leave you
--- staring at a file list you can't quit out of.
+-- nothing else to switch to you'd be staring at a file list you can't quit
+-- out of. But taking the tabpage down with the window is too much: :q on a
+-- split should cost you a window, not the tab and every buffer still listed
+-- under it. So hand the tab the next buffer it owns, and only close it once
+-- it has none left — which a run of :q now reaches, because closing a window
+-- dismisses its buffer from the tab on the way past.
 -- WinClosed as well as WinEnter: if the sidebar already has focus when the
 -- last real window goes away, no WinEnter fires and the check would never
 -- run. Scheduled because during WinClosed the window is still open.
 vim.api.nvim_create_autocmd({ "WinEnter", "WinClosed" }, {
   group = group,
-  callback = function()
+  callback = function(ev)
+    -- ev.match is the closing window, and it's still open while we're inside
+    -- the event — this is the only moment we can see what it was showing, or
+    -- which tabpage it belonged to.
+    local closed, home
+    if ev.event == "WinClosed" then
+      local w = tonumber(ev.match)
+      if w and vim.api.nvim_win_is_valid(w) then
+        closed = vim.api.nvim_win_get_buf(w)
+        home = vim.api.nvim_win_get_tabpage(w)
+      end
+    end
     vim.schedule(function()
       if not M.enabled or not valid() then return end
-      local wins = vim.tbl_filter(function(w)
-        return vim.api.nvim_win_get_config(w).relative == ""
-      end, vim.api.nvim_tabpage_list_wins(0))
-      if #wins == 1 and is_sidebar(wins[1]) then
-        vim.cmd(#vim.api.nvim_list_tabpages() > 1 and "tabclose" or "quit")
+      -- Closing a window dismisses its buffer from the tab — but only when
+      -- there's still a tab to be dismissed from. A window that died because
+      -- its whole tabpage went away is not a dismissal, and treating it as
+      -- one would drop every buffer of a closed tab into "Hidden", which is
+      -- exactly what the TabClosed handler in tabs.lua exists to prevent.
+      -- Still on screen elsewhere means the window went, not the buffer:
+      -- :split then :q, or <C-w>T, which closes and recreates the window.
+      if closed and home and vim.api.nvim_tabpage_is_valid(home) and not anywhere(closed) then
+        tabs().dismiss(closed, home)
       end
+      -- The tab the window left first, then the one we're in. Either can be
+      -- the one now holding nothing but a sidebar, and both calls are no-ops
+      -- when there's nothing to settle.
+      if home and home ~= vim.api.nvim_get_current_tabpage() then tidy(home, closed) end
+      tidy(vim.api.nvim_get_current_tabpage(), closed)
     end)
   end,
 })

@@ -58,6 +58,33 @@ map("n", "<Leader>-", "<Cmd>split<CR>", { desc = "split horizontal" })
 map("n", "<Leader>|", "<Cmd>vsplit<CR>", { desc = "split vertical" })
 map("n", "<Leader>=", "<C-w>=", { desc = "equalise splits" })
 
+-- Move this window to another tab: a count picks the tab, no count asks.
+-- The prompt takes a name as well as a number, so a tab named with
+-- :TabRename is reachable by that name.
+map("n", "<Leader>m", function()
+  local tabs = require("core.tabs")
+  if vim.v.count > 0 then return tabs.move_window(vim.v.count) end
+  vim.ui.input({ prompt = "Move window to tab: " }, function(input)
+    -- nil is <Esc>; an empty submission is not a tab anyone means.
+    if input and vim.trim(input) ~= "" then tabs.move_window(vim.trim(input)) end
+  end)
+end, { desc = "window: move to tab ([count]<Leader>m, or prompts)" })
+
+-- Vanilla <C-w>T quietly does nothing when the tab holds a single window:
+-- there'd be nothing left behind to have moved out of. The sidebar is a real
+-- window, so Vim's count sees two and lets the move through — leaving a tab
+-- with nothing but the sidebar, which the guard in sidebar.lua then closes.
+-- The new tab slides into the old one's place and the window you moved looks
+-- like it snapped straight back. Count only content windows and the original
+-- no-op applies again.
+map("n", "<C-w>T", function()
+  if #require("core.sidebar").content_wins(0) < 2 then
+    vim.notify("only one window in this tab — nothing to move out", vim.log.levels.INFO)
+    return
+  end
+  vim.cmd("wincmd T")
+end, { desc = "window: move to new tab" })
+
 -- Note: <C-h/j/k/l> are NOT mapped in terminal mode on purpose. <C-l> is
 -- clear-screen and <C-k> is kill-line in every common shell; stealing
 -- them costs more than it saves. Escape terminal mode first.
