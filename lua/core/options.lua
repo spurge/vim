@@ -84,8 +84,10 @@ o.updatetime = 250
 -- remember. Deletes go through it too; "0p still has the last yank.
 o.clipboard = "unnamedplus"
 o.spelllang = config.spell
-o.encoding = "utf-8"
-o.fileencoding = "utf-8"
+-- No 'encoding'/'fileencoding' here. Neovim's 'encoding' is locked to utf-8,
+-- and 'fileencoding' is per-buffer — setting it would only ever hit whichever
+-- buffer happened to be current, and it errors outright (E21) if that buffer
+-- is nomodifiable. Files are written as utf-8 by default anyway.
 o.jumpoptions = "stack,view"
 o.virtualedit = "block"
 o.diffopt:append({ "linematch:60" })

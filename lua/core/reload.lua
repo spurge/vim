@@ -59,6 +59,35 @@ local load = {
   "core.format",
 }
 
+-- core.options is nothing but :set, and :set writes to the *current* window
+-- and buffer. Reload from the sidebar and it would stamp number, list and
+-- signcolumn onto it — ensure_win() only dresses a sidebar window it creates,
+-- so those stick until the sidebar is closed and reopened. Stand in a normal
+-- file window instead, if the tabpage has one.
+local function normal_win()
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].buftype == "" and vim.bo[buf].modifiable then
+      return win
+    end
+  end
+  return nil
+end
+
+-- Only core.options gets that treatment: core.tabs and core.sidebar do their
+-- own window juggling, and running them under nvim_win_call would change what
+-- they think the current window is.
+local function load_module(name)
+  local win = name == "core.options" and normal_win() or nil
+  return xpcall(function()
+    if win then
+      vim.api.nvim_win_call(win, function() require(name) end)
+    else
+      require(name)
+    end
+  end, debug.traceback)
+end
+
 vim.api.nvim_create_user_command("Reload", function()
   for _, name in ipairs(purge) do
     local mod = package.loaded[name]
@@ -73,9 +102,13 @@ vim.api.nvim_create_user_command("Reload", function()
 
   local failed = {}
   for _, name in ipairs(load) do
-    local ok, err = pcall(require, name)
+    local ok, err = load_module(name)
     if not ok then
-      table.insert(failed, ("  %s\n    %s"):format(name, tostring(err)))
+      -- With the traceback, "E21 at vim/_core/options:713" is followed by the
+      -- line in our own config that asked for it. Indent every line of it so
+      -- several failed modules stay tellable apart.
+      local trace = tostring(err):gsub("\n", "\n    ")
+      table.insert(failed, ("  %s\n    %s"):format(name, trace))
     end
   end
 
