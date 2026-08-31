@@ -63,9 +63,36 @@ function M.content_wins(tab)
   return out
 end
 
+--- The window a chosen buffer should be DROPPED INTO, which is not quite
+--- content_wins(tab)[1]. Under core.stack the first content window can be a
+--- collapsed stack member — one row tall, showing nothing — and landing a
+--- file there looks exactly like the click did nothing at all. core.stack
+--- answers with the expanded member of that column instead.
+---
+--- package.loaded rather than require: no cycle to break, nothing to pay
+--- when the module isn't loaded, and it degrades to the old behaviour by
+--- itself when stacking is switched off.
+function M.target_win(tab)
+  local wins = M.content_wins(tab)
+  -- Prefer a window that can actually hold a file. Terminals count as
+  -- content windows — they always have — but now that a terminal can be the
+  -- expanded member of a stack, the first content window is much more often
+  -- one, and dropping a file into it would replace a running shell.
+  local win = wins[1]
+  for _, w in ipairs(wins) do
+    local buf = vim.api.nvim_win_get_buf(w)
+    if vim.bo[buf].buftype ~= "terminal" then
+      win = w
+      break
+    end
+  end
+  local stack = package.loaded["core.stack"]
+  return stack and stack.expand(win) or win
+end
+
 --- The window a chosen buffer should be loaded into.
 local function content_win()
-  return M.content_wins(0)[1]
+  return M.target_win(0)
 end
 
 -- Creating and populating the window fires BufEnter/WinEnter, which route
@@ -256,6 +283,11 @@ local function ensure_win()
       winfixwidth = true, number = false, relativenumber = false,
       signcolumn = "no", foldcolumn = "0", wrap = false, list = false,
       spell = false, cursorline = true, statuscolumn = "",
+      -- Only ever seen under 'laststatus' 2, which core.stack turns on for a
+      -- tabpage holding a stack. Without it every stacked tab renders the
+      -- full statusline over this scratch buffer — mode, %f, filetype,
+      -- line:col — all of it meaningless for a list of tabs.
+      statusline = "%#StatusLineNC# tabs%=",
     }) do
       vim.wo[win][opt] = value
     end

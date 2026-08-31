@@ -32,4 +32,6 @@ require("core.format")      -- format on save
 require("core.claude")      -- Claude Code rate limits + notifications
 require("core.statusline")  -- native statusline
 require("core.tabs")        -- tabline / stacked sidebar, one model both ways
+require("core.stack")       -- i3-style stacked windows inside one tab
+require("core.iterm")       -- one-way nvim -> iTerm2 title / tab colour
 require("core.reload")      -- :Reload, for settings changes without a restart

@@ -172,6 +172,65 @@ return {
     show_diagnostics = true, -- ✖errors ⚠warnings, from the LSP
   },
 
+  -- ── Stacked windows ─────────────────────────────────────────────────
+  -- i3/sway's `layout stacking`, for ONE column of windows inside a tab.
+  -- The focused member fills the column; every other member collapses to a
+  -- single row — its statusline, which reads as a title bar. Everything
+  -- else in the tab keeps its normal geometry: the sidebar, any vsplit
+  -- neighbour, the terminal splits. That's the difference between this and
+  -- "the whole tab stacks", and it's the i3 model: stacking is a property
+  -- of a container, not of the workspace.
+  --
+  -- <C-j> / <C-k> ARE the stack navigation. Moving focus into a collapsed
+  -- member expands it, because they're ordinary windows that happen to be
+  -- one row tall. ,zj / ,zk exist only to wrap around at the ends.
+  --
+  -- A tab holding a stack runs with laststatus=2 — one statusline per
+  -- window — because that IS the title row. Tabs without a stack keep the
+  -- global statusline; the flip is automatic, per tab.
+  stack = {
+    enabled = true,
+
+    -- A :split made inside the stacked column joins the stack, rather than
+    -- sitting in it as an odd full-height window. The sidebar, quickfix and
+    -- help windows are never adopted, and neither are the <Leader>cs /
+    -- <Leader>cc terminals — those own their own height, so they only join
+    -- when you stack a column deliberately. Ordinary terminals ARE stackable
+    -- either way, and mixing them in with files is the point.
+    adopt = true,
+
+    -- ,zj past the last member goes back to the first.
+    wrap = true,
+
+    -- What the title row says besides the filename. Same source as the tab
+    -- list, so the two can't disagree about what a window holds.
+    show_path = false,       -- the directory; costs a lot of a one-line title
+    show_git = true,         -- +added ~changed -removed, from gitsigns
+    show_diagnostics = true, -- ✖errors ⚠warnings, from the LSP
+  },
+
+  -- ── iTerm2 ──────────────────────────────────────────────────────────
+  -- One-way cosmetic sync: Neovim tells iTerm2 what it's showing.
+  --
+  -- Cosmetic is the ceiling, and that's iTerm2's limit rather than a choice
+  -- made here. There is no escape code to create, select or even enumerate
+  -- an iTerm2 tab; its only native-tab bridge is tmux control mode
+  -- (`tmux -CC`), which Neovim does not speak. Neovim tabs and iTerm2 tabs
+  -- stay separate things. This makes the iTerm2 one say what the Neovim one
+  -- contains.
+  --
+  -- `title` works in every terminal. The rest is OSC 1337 and is a silent
+  -- no-op anywhere but iTerm2.
+  iterm = {
+    enabled = true,
+    title = true,      -- 'titlestring' from the tab model
+    user_vars = true,  -- OSC 1337 SetUserVar. Read them on the iTerm2 side as
+                       -- \(user.nvim_tab) in a tab title, badge or status bar
+    tab_color = true,  -- tint the native tab: amber unsaved, red on errors
+    colors = { modified = "b58900", error = "cc241d" },
+    interval = 250,    -- ms; nothing here ever runs at redraw time
+  },
+
   -- ── Claude Code ─────────────────────────────────────────────────────
   -- Rate limits in the statusline, and a desktop notification when Claude
   -- finishes or wants something. Nothing here needs an API key: both

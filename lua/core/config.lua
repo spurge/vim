@@ -44,6 +44,22 @@ local defaults = {
     show_git = true,
     show_diagnostics = true,
   },
+  stack = {
+    enabled = true,
+    adopt = true,
+    wrap = true,
+    show_path = false,
+    show_git = true,
+    show_diagnostics = true,
+  },
+  iterm = {
+    enabled = true,
+    title = true,
+    user_vars = true,
+    tab_color = true,
+    colors = { modified = "b58900", error = "cc241d" },
+    interval = 250,
+  },
   claude = {
     enabled = true,
     statusline = true,

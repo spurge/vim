@@ -71,6 +71,33 @@ map("n", "<C-w>T", function()
   vim.cmd("wincmd T")
 end, { desc = "window: move to new tab" })
 
+-- ── Stacked windows ───────────────────────────────────────────────────
+-- i3's `layout stacking` for one column of this tab. There are deliberately
+-- no navigation keys here: a collapsed member is an ordinary window that
+-- happens to be one row tall, so <C-j>/<C-k> above already walk into it and
+-- entering it is what expands it. ,zj/,zk only add wrap-around at the ends.
+--
+-- Through the module, not through the :Stack* commands. This file is loaded
+-- BEFORE core.stack (see init.lua), and the require there is unprotected —
+-- so if core.stack ever fails to load, init.lua stops, these mappings are
+-- already defined, and a <Cmd>StackToggle<CR> would report "E492: Not an
+-- editor command" as though you'd mistyped something. Calling the module
+-- says what actually went wrong. Same shape as <Leader>m above.
+local function stack(fn, arg)
+  return function()
+    local ok, m = pcall(require, "core.stack")
+    if not ok then
+      return vim.notify("core.stack failed to load: " .. tostring(m), vim.log.levels.ERROR)
+    end
+    m[fn](arg)
+  end
+end
+map("n", "<Leader>zz", stack("toggle"), { desc = "stack: toggle this column" })
+map("n", "<Leader>za", stack("add"), { desc = "stack: add this window" })
+map("n", "<Leader>zx", stack("remove"), { desc = "stack: remove this window" })
+map("n", "<Leader>zj", stack("cycle", 1), { desc = "stack: next member" })
+map("n", "<Leader>zk", stack("cycle", -1), { desc = "stack: previous member" })
+
 -- Note: <C-h/j/k/l> are NOT mapped in terminal mode on purpose. <C-l> is
 -- clear-screen and <C-k> is kill-line in every common shell; stealing
 -- them costs more than it saves. Escape terminal mode first.

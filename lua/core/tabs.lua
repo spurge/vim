@@ -52,9 +52,21 @@ local function listed(buf)
     and (buf == vim.api.nvim_get_current_buf() or not scratch(buf))
 end
 
-local function label(buf)
+--- The name for a buffer: its tail, or a terminal's title. Public because
+--- there are three views over this model now, not two — core.stack's
+--- collapsed title row renders from it as well, and a title bar that
+--- disagreed with the sidebar about what a window holds would be worse
+--- than no title bar.
+function M.label(buf)
   if vim.bo[buf].buftype == "terminal" then
-    return vim.b[buf].term_title or "[terminal]"
+    local title = vim.b[buf].term_title
+    if not title or title == "" then return "[terminal]" end
+    -- Neovim seeds b:term_title with the term:// URI and leaves it there
+    -- until the program sets an OSC title of its own — and a shell loop or
+    -- a build never does. That URI is a full cwd plus a pid, which tells you
+    -- nothing and costs the whole line in a one-row stack title. The part
+    -- after the pid is the command that's actually running.
+    return title:match("^term://.*//%d+:(.+)$") or title
   end
   local name = vim.api.nvim_buf_get_name(buf)
   if name == "" then return "[No Name]" end
@@ -68,24 +80,30 @@ local function tabname(tab)
   if ok and type(name) == "string" and name ~= "" then return name end
 end
 
-local function dir(buf)
+function M.dir(buf)
   local name = vim.api.nvim_buf_get_name(buf)
   if name == "" or vim.bo[buf].buftype ~= "" then return "" end
   return vim.fn.fnamemodify(name, ":~:.:h")
 end
 
-local function status(buf)
+--- `opts` says which categories to collect, defaulting to the tab views'
+--- own settings. core.stack passes its own: settings.stack.show_git and
+--- show_diagnostics are advertised as independent of the tab list's, and
+--- reading config.tabs here unconditionally would silently make them
+--- unable to turn anything back ON.
+function M.status(buf, opts)
+  opts = opts or config.tabs
   local s = {
     modified = vim.bo[buf].modified,
     errors = 0, warnings = 0,
     added = 0, changed = 0, removed = 0,
   }
-  if config.tabs.show_diagnostics then
+  if opts.show_diagnostics then
     local n = vim.diagnostic.count(buf)
     s.errors = n[vim.diagnostic.severity.ERROR] or 0
     s.warnings = n[vim.diagnostic.severity.WARN] or 0
   end
-  if config.tabs.show_git then
+  if opts.show_git then
     local d = vim.b[buf].gitsigns_status_dict
     if d then
       s.added, s.changed, s.removed = d.added or 0, d.changed or 0, d.removed or 0
@@ -120,10 +138,10 @@ local function entry(buf, win, cur_buf)
   return {
     buf = buf,
     win = win,
-    name = label(buf),
-    dir = dir(buf),
+    name = M.label(buf),
+    dir = M.dir(buf),
     current = buf == cur_buf,
-    status = status(buf),
+    status = M.status(buf),
   }
 end
 
@@ -183,8 +201,8 @@ function M.tree()
 
   for _, t in ipairs(tabs) do
     table.sort(t.buffers, by_name)
-    t.name = t.active and label(t.active) or "[No Name]"
-    t.dir = t.active and dir(t.active) or ""
+    t.name = t.active and M.label(t.active) or "[No Name]"
+    t.dir = t.active and M.dir(t.active) or ""
     -- Kept apart from t.name: the derived label is still what the views
     -- fall back to, and what collision detection compares.
     t.custom = tabname(t.handle)
@@ -262,6 +280,14 @@ function M.atoms(s, opts)
   return out
 end
 
+--- Escape a string for use in a statusline/tabline format. A '%' in a
+--- filename would otherwise be read as a format item — and the result of a
+--- '%!' expression is itself re-interpreted, so every view that interpolates
+--- a name has to pay this, not just the tabline.
+function M.escape(s)
+  return (s:gsub("%%", "%%%%"))
+end
+
 --- Clip to `max` display cells, marking the cut with an ellipsis.
 function M.truncate(s, max)
   if max < 2 or vim.fn.strdisplaywidth(s) <= max then return s end
@@ -269,11 +295,6 @@ function M.truncate(s, max)
 end
 
 -- ── Tabline view ──────────────────────────────────────────────────────
-
--- A '%' in a filename would be read as a format item.
-local function esc(s)
-  return (s:gsub("%%", "%%%%"))
-end
 
 local function build(tabs, opts)
   local parts, width = {}, 0
@@ -301,7 +322,7 @@ local function build(tabs, opts)
       -- %{n}T opens a native click region: Neovim switches to tab n on a
       -- mouse click by itself, no Lua handler needed. %T below closes the
       -- last one.
-      table.insert(parts, ("%%%dT%s%s"):format(t.index, hl, esc(text)))
+      table.insert(parts, ("%%%dT%s%s"):format(t.index, hl, M.escape(text)))
     end
   end
 
@@ -448,7 +469,7 @@ function M.move_window(where, vertical)
   -- Land the buffer in the target before closing the source window: if
   -- anything here fails there is still a window showing the file.
   vim.api.nvim_set_current_tabpage(target)
-  local host = sidebar().content_wins(0)[1]
+  local host = sidebar().target_win(0)
   if host then
     vim.api.nvim_set_current_win(host)
     vim.cmd(vertical and "vsplit" or "split")
@@ -485,15 +506,27 @@ end
 local pending = false
 
 function M.refresh()
+  -- The tabline is a format string: redrawing it is what evaluating it costs,
+  -- and deferring would show a stale strip for a frame.
   if M.mode == "tabline" then
     vim.cmd("redrawtabline")
-  elseif M.mode == "sidebar" and not pending then
-    pending = true
-    vim.schedule(function()
-      pending = false
-      if M.mode == "sidebar" then sidebar().render() end
-    end)
   end
+
+  -- Everything else waits for the end of the tick. The sidebar is a real
+  -- window and core.iterm writes to the terminal, so both want to happen
+  -- once per burst rather than once per event — and they want to happen in
+  -- "none" mode too, which is why this is no longer nested under the mode
+  -- check above.
+  if pending then return end
+  pending = true
+  vim.schedule(function()
+    pending = false
+    if M.mode == "sidebar" then sidebar().render() end
+    -- package.loaded, not require: free for every terminal that isn't
+    -- iTerm2, and for anyone who turned it off.
+    local iterm = package.loaded["core.iterm"]
+    if iterm then iterm.sync() end
+  end)
 end
 
 -- ── Wiring ────────────────────────────────────────────────────────────

@@ -39,11 +39,20 @@ local purge = {
   "core.statusline",
   "core.tabs",
   "core.sidebar",
+  "core.stack",
+  "core.iterm",
   "core.format",
   -- Not in `load` below: nothing requires it at startup, $EDITOR pulls it
   -- in on demand. It still has to be purged, or an nvim that has run one
   -- git commit keeps the old copy for the rest of its life.
   "core.remote",
+  -- This file. Without it :Reload forever runs the copy loaded at STARTUP,
+  -- which means the two lists here are frozen at whatever they said when
+  -- the session began — so adding a module to them and reloading picks up
+  -- every OTHER changed file but never the new module itself. That failure
+  -- is quiet and confusing: keymaps.lua comes back naming commands that the
+  -- module which defines them was never loaded to create.
+  "core.reload",
 }
 
 -- Required back, in dependency order. core.sidebar is absent on purpose:
@@ -56,7 +65,15 @@ local load = {
   "core.claude",
   "core.statusline",
   "core.tabs",
+  -- After core.tabs: both read its model, and core.stack re-adopts the
+  -- stacks the previous incarnation left tagged.
+  "core.stack",
+  "core.iterm",
   "core.format",
+  -- Last, and safe to re-run: nvim_create_user_command overwrites :Reload
+  -- rather than erroring, and the callback currently executing keeps its
+  -- own upvalues. If this require fails, the old command simply survives.
+  "core.reload",
 }
 
 -- core.options is nothing but :set, and :set writes to the *current* window

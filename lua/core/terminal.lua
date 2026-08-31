@@ -117,9 +117,22 @@ local function toggle(name, cmd, size)
     vim.api.nvim_win_set_buf(0, slot.buf)
     vim.cmd.startinsert()
   else
+    -- :enew FIRST. jobstart(..., { term = true }) converts the CURRENT
+    -- buffer into the terminal, and the window `botright split` just made is
+    -- still showing the buffer it was split from — so without this, opening
+    -- a shell turns the file you were editing into the terminal. The file
+    -- buffer is destroyed and both windows end up showing the shell. This is
+    -- the pattern the API docs use: :enew | call jobstart(..., {'term':1}).
+    vim.cmd("enew")
     -- Always the interactive shell, whatever 'shell' happens to be.
     shell.open_terminal(cmd)
-    slots[name] = { buf = vim.api.nvim_get_current_buf() }
+    local buf = vim.api.nvim_get_current_buf()
+    -- Mark it as one of THESE terminals, not just any terminal. core.stack
+    -- lets ordinary terminals be stacked alongside files, but these are
+    -- toggleable overlays with a height of their own: swept into a stack
+    -- they'd fight <Leader>cs for control of the same window.
+    vim.b[buf].core_term_slot = name
+    slots[name] = { buf = buf }
   end
 end
 
@@ -127,6 +140,7 @@ map({ "n", "t" }, "<Leader>cs", function() toggle("shell", nil, 0.35) end,
   { desc = "toggle shell split" })
 map("n", "<Leader>cV", function()
   vim.cmd("vsplit")
+  vim.cmd("enew") -- see the note in toggle(): jobstart eats the current buffer
   shell.open_terminal()
 end, { desc = "shell in vertical split" })
 
@@ -139,6 +153,7 @@ if agent and agent ~= "" then
 
   map("n", "<Leader>cv", function()
     vim.cmd("vsplit")
+    vim.cmd("enew") -- see the note in toggle()
     shell.open_terminal(agent)
   end, { desc = agent .. " in vertical split" })
 
