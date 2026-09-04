@@ -263,6 +263,7 @@ lua/core/
   options.lua               editor options
   keymaps.lua               keymaps
   theme.lua                 colorscheme + OS light/dark
+  termcolors.lua            legible ANSI palette + colour env for :terminal
   lsp.lua                   native vim.lsp
   shell.lua                 which shell for :terminal vs for system()
   terminal.lua              escape, nesting, agent splits
@@ -316,7 +317,7 @@ In-editor: `:Reload` (re-read settings without restarting), `:Tabs`,
 `:ThemesToggle`
 (next colorscheme), `:Theme <name>`,
 `:ThemeToggle` (light/dark), `:FormatInfo`, `:FormatOff[!]`, `:FormatOn`,
-`:Shell`, `:ShellInfo`, `:ClaudeSetup[!]`, `:ClaudeUsage`,
+`:Shell`, `:ShellInfo`, `:TermColors`, `:ClaudeSetup[!]`, `:ClaudeUsage`,
 `:checkhealth vim.lsp`.
 
 `theme.themes` in `lua/settings.lua` is an ordered list; `:ThemesToggle`
@@ -336,6 +337,20 @@ after.
 - **`brew install tree-sitter` is not the CLI.** That formula is the
   library; nvim-treesitter needs `tree-sitter-cli`. Without it every
   grammar fails to build, on every launch. `make verify` checks for it.
+- **Dark text on a dark background inside a terminal split** is Neovim's
+  doing, not the colorscheme's, and `core/termcolors.lua` is the answer.
+  Neovim strips `$COLORTERM` from every terminal child, so Claude Code,
+  delta, bat and friends drop to 16 colours; those 16 come from
+  `g:terminal_color_0`…`_15`, which a colorscheme need not set — and with
+  `*_better_performance = 1` neither gruvbox-material nor everforest does,
+  leaving libvterm's `#000000` and `#0000e0`. Perfectly readable on a
+  light background, invisible on a dark one, which is why it only shows up
+  after the OS flips in the evening. `:TermColors` shows the palette in
+  effect and its contrast against `Normal`.
+- **The terminal palette is fixed at `TermOpen`** (`:help terminal-config`).
+  A terminal that was already running when the OS flipped keeps the
+  palette it was born with; restart it. `:TermColors` lists which
+  terminals those are.
 - **`:Reload` skips four modules on purpose** — `plugins.lua`, `lsp.lua`,
   `shell.lua`, `terminal.lua`. Their state is live (loaded plugins,
   running clients, terminal jobs). Change those and restart. It *does* now

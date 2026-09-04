@@ -34,6 +34,7 @@ local purge = {
   "core.config",
   "core.options",
   "core.keymaps",
+  "core.termcolors",
   "core.theme",
   "core.claude",
   "core.statusline",
@@ -60,6 +61,9 @@ local purge = {
 local load = {
   "core.options",
   "core.keymaps",
+  -- Before core.theme: it installs the ColorScheme hook that builds the
+  -- terminal palette, and core.theme applies a colorscheme as it loads.
+  "core.termcolors",
   "core.theme",
   -- Before core.statusline, which requires it.
   "core.claude",

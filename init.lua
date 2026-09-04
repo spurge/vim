@@ -24,6 +24,7 @@ vim.g.maplocalleader = config.localleader
 require("core.plugins")     -- vim.pack.add + setup calls
 require("core.options")     -- editor options
 require("core.keymaps")     -- keymaps
+require("core.termcolors")  -- legible ANSI palette + colour env for :terminal
 require("core.theme")       -- colorscheme + OS light/dark following
 require("core.shell")       -- which shell for :terminal vs for system()
 require("core.lsp")         -- native vim.lsp

@@ -128,6 +128,39 @@ return {
     agent = "claude",
 
     height = 0.4, -- fraction of the window for bottom splits
+
+    -- What a TUI running inside a terminal buffer can see.
+    --
+    -- Neovim hands its terminal children a deliberately impoverished
+    -- environment: no $COLORTERM (so Claude Code, delta, bat and friends
+    -- decide they only have 16 colours) and no $COLORFGBG (so anything set
+    -- to "auto" cannot tell light from dark — Neovim answers the OSC 11
+    -- background query with a hardcoded black whatever the theme is). Then
+    -- those 16 colours come from `g:terminal_color_0` … `_15`, which a
+    -- colorscheme need not set at all — gruvbox-material sets none, so you
+    -- get libvterm's black-and-navy defaults, invisible on a dark
+    -- background and perfectly fine on a light one. That is the "dark text
+    -- on dark background, but only in the evening" bug.
+    --
+    -- See :TermColors for the palette in effect and its contrast.
+    colors = {
+      enabled = true,
+
+      -- Minimum WCAG contrast ratio between any palette entry and the
+      -- Normal background. Entries that already clear it are left exactly
+      -- as the colorscheme wrote them; the rest are nudged towards the
+      -- foreground until they do. 3.0 keeps "dim" looking dim while
+      -- staying readable; 4.5 is the body-text standard and flattens the
+      -- palette noticeably.
+      min_contrast = 3.0,
+
+      -- Put $COLORTERM back, but only while 'termguicolors' is on, so it
+      -- is never a claim Neovim can't honour.
+      truecolor = true,
+
+      -- Set $COLORFGBG from 'background', for TUIs on an auto theme.
+      hint_background = true,
+    },
   },
 
   -- ── Shell ───────────────────────────────────────────────────────────

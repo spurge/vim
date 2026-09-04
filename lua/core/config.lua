@@ -35,6 +35,12 @@ local defaults = {
     escape = { "<C-Space>", "<C-@>" },
     agent = nil,
     height = 0.4,
+    colors = {
+      enabled = true,
+      min_contrast = 3.0,
+      truecolor = true,
+      hint_background = true,
+    },
   },
   shell = { interactive = nil, internal = "interactive" },
   tabs = {

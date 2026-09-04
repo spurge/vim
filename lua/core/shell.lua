@@ -125,6 +125,13 @@ end, { desc = "Interactive shell in a split" })
 --- exec'd directly. `:terminal foo` runs foo *through* 'shell', which
 --- would spawn a pointless bash wrapper around fish when
 --- shell.internal = "posix".
+---
+--- The `env` is the other reason to be here rather than on :terminal.
+--- Neovim strips $COLORTERM and $COLORFGBG from every terminal child, so
+--- a TUI in here believes it has 16 colours and cannot tell light from
+--- dark. A per-job env dict is the only way to put them back — see
+--- core/termcolors.lua. Plain :terminal has no such option, so terminals
+--- opened that way keep Neovim's stripped environment.
 function M.open_terminal(cmd)
   local argv
   if not cmd then
@@ -134,7 +141,13 @@ function M.open_terminal(cmd)
   else
     argv = { M.interactive_path, "-c", cmd }
   end
-  return vim.fn.jobstart(argv, { term = true })
+  -- Required here rather than at the top of the file: core.shell is not
+  -- reloadable (see core/reload.lua) and core.termcolors is, so a
+  -- file-scoped reference would pin the pre-:Reload copy forever.
+  return vim.fn.jobstart(argv, {
+    term = true,
+    env = require("core.termcolors").env(),
+  })
 end
 
 return M
