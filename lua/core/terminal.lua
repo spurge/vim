@@ -148,13 +148,21 @@ end, { desc = "shell in vertical split" })
 -- settings.terminal.agent = "claude" | "aider" | "codex" | nil
 local agent = config.terminal.agent
 if agent and agent ~= "" then
-  map({ "n", "t" }, "<Leader>cc", function() toggle("agent", agent, 0.45) end,
+  -- Resolved at launch, not here: it carries the CURRENT 'background',
+  -- which core.termcolors has to tell Claude Code explicitly because
+  -- Neovim's terminal misreports it. Required lazily for the reason in
+  -- core/shell.lua — this module is not reloadable and that one is.
+  local function agent_cmd()
+    return require("core.termcolors").agent_argv(agent)
+  end
+
+  map({ "n", "t" }, "<Leader>cc", function() toggle("agent", agent_cmd(), 0.45) end,
     { desc = "toggle " .. agent })
 
   map("n", "<Leader>cv", function()
     vim.cmd("vsplit")
     vim.cmd("enew") -- see the note in toggle()
-    shell.open_terminal(agent)
+    shell.open_terminal(agent_cmd())
   end, { desc = agent .. " in vertical split" })
 
   -- Send the current file's path to the agent terminal, so you don't

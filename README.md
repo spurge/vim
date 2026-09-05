@@ -345,8 +345,16 @@ after.
   `*_better_performance = 1` neither gruvbox-material nor everforest does,
   leaving libvterm's `#000000` and `#0000e0`. Perfectly readable on a
   light background, invisible on a dark one, which is why it only shows up
-  after the OS flips in the evening. `:TermColors` shows the palette in
-  effect and its contrast against `Normal`.
+  after the OS flips in the evening. In light mode the same thing runs the
+  other way — `color_7` is `#e5e5e5`, invisible on cream — so both halves
+  of the day break, just at opposite ends of the palette. `:TermColors`
+  shows the palette in effect and its contrast against `Normal`.
+- **Neovim tells terminal children the background is black**, always,
+  whatever the colorscheme — it answers their OSC 11 query with a
+  hardcoded `rgb:0000/0000/0000` and strips `$COLORFGBG`. So Claude Code's
+  `theme: "auto"` picks dark at midday. `core/termcolors.lua` launches it
+  with `--settings '{"theme":…}'` instead; set
+  `terminal.colors.agent_theme = false` to stop that.
 - **The terminal palette is fixed at `TermOpen`** (`:help terminal-config`).
   A terminal that was already running when the OS flipped keeps the
   palette it was born with; restart it. `:TermColors` lists which

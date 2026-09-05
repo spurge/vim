@@ -40,6 +40,7 @@ local defaults = {
       min_contrast = 3.0,
       truecolor = true,
       hint_background = true,
+      agent_theme = true,
     },
   },
   shell = { interactive = nil, internal = "interactive" },

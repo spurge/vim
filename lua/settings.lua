@@ -160,6 +160,14 @@ return {
 
       -- Set $COLORFGBG from 'background', for TUIs on an auto theme.
       hint_background = true,
+
+      -- Launch the <Leader>cc agent with its light/dark set explicitly.
+      -- Claude Code's "auto" asks the terminal via OSC 11, and Neovim
+      -- answers a hardcoded black whatever the colorscheme is — so "auto"
+      -- in here always means dark, and a dark theme at midday is the same
+      -- bug as a light theme at night. Only Claude Code is touched; any
+      -- other agent is launched exactly as you wrote it.
+      agent_theme = true,
     },
   },
 

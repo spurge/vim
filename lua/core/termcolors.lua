@@ -258,6 +258,33 @@ function M.env()
   return out
 end
 
+--- Argv for a coding agent, carrying the light/dark it cannot work out
+--- for itself.
+---
+--- Claude Code's `theme: "auto"` asks the terminal what colour its
+--- background is (OSC 11) and Neovim answers a hardcoded
+--- rgb:0000/0000/0000 whatever the colorscheme is — so inside here "auto"
+--- always concludes dark. That was invisible while $COLORTERM was
+--- stripped and Claude was stuck on 16 colours anyway; handing truecolor
+--- back makes its theme choice the thing that decides every pixel, and a
+--- dark theme at midday is the same bug as a light theme at night.
+---
+--- Anything that isn't Claude Code is launched exactly as written: this
+--- is one CLI's flag, not a convention other agents share.
+function M.agent_argv(agent)
+  if not enabled or settings.agent_theme == false then return agent end
+  if type(agent) ~= "string" or vim.fn.fnamemodify(agent, ":t") ~= "claude" then
+    return agent
+  end
+  -- --settings layers over ~/.claude/settings.json for this process only,
+  -- so it doesn't touch the file :ClaudeSetup writes, and an unrecognised
+  -- value is ignored rather than refusing to start.
+  return {
+    agent, "--settings",
+    vim.json.encode({ theme = vim.o.background == "dark" and "dark" or "light" }),
+  }
+end
+
 -- ── Wiring ────────────────────────────────────────────────────────────
 -- ColorSchemePre clears the palette so one theme's colours can't survive
 -- into the next: :ThemesToggle from everforest (which sets all 16) to
