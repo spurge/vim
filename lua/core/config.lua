@@ -70,7 +70,7 @@ local defaults = {
   },
   hostterm = {
     notify = { enabled = true, when = "unfocused", terminals = true },
-    progress = { enabled = true, lsp = true, terminals = true },
+    progress = { enabled = true, lsp = true, terminals = true, claude = true },
   },
   images = {
     enabled = false,
@@ -79,6 +79,7 @@ local defaults = {
     enabled = true,
     statusline = true,
     notify = true,
+    progress = true,
     interval = 30,
     stale_after = 1800,
   },

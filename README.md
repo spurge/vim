@@ -238,8 +238,17 @@ Neovim, Neovim is that terminal and would swallow them, so
   `claude/notify.sh` goes the same way when it runs inside Neovim, which
   gives the Claude hooks the focus detection they can't have on their own.
 - **One progress bar** for everything: Claude Code working, language
-  servers indexing, `vim.pack` installing. Unknown percentages anywhere make
-  it indeterminate; otherwise it's the average.
+  servers indexing, `vim.pack` installing. Ghostty has one bar for the whole
+  window, so with several things running it shows all of them at once:
+  red if anything failed, indeterminate if anything running has no
+  percentage, otherwise the average — and paused (Claude waiting for your
+  permission) only once nothing else is running.
+
+  Claude Code sends no progress of its own from inside a Neovim terminal,
+  so its sessions are tracked from hooks instead (`claude/progress.sh`,
+  installed by `:ClaudeSetup`): running from your prompt until the turn
+  ends, paused on a permission prompt, cleared by its idle notification
+  after an interrupt.
 
 iTerm2, WezTerm and kitty get what each supports. `hostterm` in
 `lua/settings.lua` has the switches; `:HostTerm` shows what was detected and
@@ -289,10 +298,12 @@ information you'd otherwise get by watching the `,cc` split.
 
 The statusline half works on its own, reading `cachedUsageUtilization` from
 `~/.claude.json`. For live numbers and for notifications, run **`:ClaudeSetup`**
-once. It adds three entries to `~/.claude/settings.json` — a `statusLine`
-command and two hooks, all pointing at `claude/*.sh` in this repo — after
-showing you exactly what it will add and backing the file up. Everything else in
-there is left alone. `:ClaudeSetup!` takes them out again.
+once. It adds a `statusLine` command and hooks to `~/.claude/settings.json`,
+all pointing at `claude/*.sh` in this repo — the notification hooks, and the
+progress-bar hooks from `claude.progress` — after showing you exactly what it
+will add and backing the file up. Hooks are merged per event, so hooks of
+your own on the same events keep running; everything else in there is left
+alone. `:ClaudeSetup!` takes out only what points into this repo.
 
 `:ClaudeUsage` prints the current numbers, which of the two sources they came
 from and how old they are — start there if the segment is empty.

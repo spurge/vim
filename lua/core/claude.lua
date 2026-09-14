@@ -302,39 +302,90 @@ end
 local function scripts()
   local root = repo_root()
   return vim.fs.joinpath(root, "claude", "statusline.sh"),
-    vim.fs.joinpath(root, "claude", "notify.sh")
+    vim.fs.joinpath(root, "claude", "notify.sh"),
+    vim.fs.joinpath(root, "claude", "progress.sh")
 end
 
-local function hook_entry(command)
-  return { { matcher = "", hooks = { { type = "command", command = command } } } }
+--- event -> the commands this config wants run on it, in order.
+local function wanted_hooks()
+  local _, notify_sh, progress_sh = scripts()
+  local hooks = {}
+  local function add(event, command)
+    hooks[event] = hooks[event] or {}
+    table.insert(hooks[event], command)
+  end
+  if settings.notify ~= false then
+    add("Notification", notify_sh .. " attention")
+    add("Stop", notify_sh .. " done")
+  end
+  -- The progress bar only exists inside Neovim; progress.sh exits at once
+  -- anywhere else, so these cost nothing in a plain terminal.
+  if settings.progress ~= false then
+    add("UserPromptSubmit", progress_sh .. " running")
+    add("PostToolUse", progress_sh .. " running")
+    add("PostToolUseFailure", progress_sh .. " running")
+    add("Notification", progress_sh .. " attention")
+    add("Stop", progress_sh .. " stop")
+    add("StopFailure", progress_sh .. " stop")
+    add("SessionEnd", progress_sh .. " stop")
+  end
+  return hooks
 end
 
---- Our three entries, layered onto whatever is already in the file.
+--- Is this hooks entry one of ours? Recognised by the script directory, so
+--- entries you wrote yourself for the same events are never touched.
+local function is_ours(entry)
+  local dir = vim.fs.joinpath(repo_root(), "claude") .. "/"
+  for _, h in ipairs(type(entry) == "table" and entry.hooks or {}) do
+    if type(h.command) == "string" and h.command:sub(1, #dir) == dir then return true end
+  end
+  return false
+end
+
+--- `hooks` with every entry of ours taken out, and empty events dropped.
+local function strip_ours(hooks)
+  local out = {}
+  for event, entries in pairs(type(hooks) == "table" and hooks or {}) do
+    local kept = {}
+    for _, entry in ipairs(type(entries) == "table" and entries or {}) do
+      if not is_ours(entry) then table.insert(kept, entry) end
+    end
+    if #kept > 0 then out[event] = kept end
+  end
+  return out
+end
+
+--- Our entries, layered onto whatever is already in the file. Hooks are
+--- merged per event rather than replaced, so a Stop hook of your own keeps
+--- running next to ours.
 local function with_integration(current_settings)
-  local statusline_sh, notify_sh = scripts()
+  local statusline_sh = scripts()
   local out = vim.deepcopy(current_settings)
 
   if settings.statusline ~= false then
     out.statusLine = { type = "command", command = statusline_sh }
   end
 
-  if settings.notify ~= false then
-    out.hooks = type(out.hooks) == "table" and out.hooks or {}
-    out.hooks.Notification = hook_entry(notify_sh .. " attention")
-    out.hooks.Stop = hook_entry(notify_sh .. " done")
+  local hooks = strip_ours(out.hooks)
+  for event, commands in pairs(wanted_hooks()) do
+    hooks[event] = hooks[event] or {}
+    table.insert(hooks[event], {
+      matcher = "",
+      hooks = vim.tbl_map(function(c) return { type = "command", command = c } end, commands),
+    })
   end
+  out.hooks = next(hooks) and hooks or nil
 
   return out
 end
 
 local function without_integration(current_settings)
   local out = vim.deepcopy(current_settings)
-  out.statusLine = nil
-  if type(out.hooks) == "table" then
-    out.hooks.Notification = nil
-    out.hooks.Stop = nil
-    if next(out.hooks) == nil then out.hooks = nil end
+  if type(out.statusLine) == "table" and out.statusLine.command == (scripts()) then
+    out.statusLine = nil
   end
+  local hooks = strip_ours(out.hooks)
+  out.hooks = next(hooks) and hooks or nil
   return out
 end
 
@@ -389,8 +440,8 @@ local function setup(remove)
     return
   end
 
-  local statusline_sh, notify_sh = scripts()
-  for _, path in ipairs({ statusline_sh, notify_sh }) do
+  local statusline_sh, notify_sh, progress_sh = scripts()
+  for _, path in ipairs({ statusline_sh, notify_sh, progress_sh }) do
     if vim.fn.executable(path) ~= 1 then
       vim.notify(("%s is not executable — run: chmod +x %s"):format(path, path),
         vim.log.levels.ERROR)
@@ -400,25 +451,21 @@ local function setup(remove)
 
   local preview
   if remove then
-    -- Worth saying plainly: this removes our three entries, it does not
-    -- put back a Notification hook that was there before :ClaudeSetup ran.
-    -- That one is in the backup this wrote at the time.
     preview = table.concat({
-      "  statusLine         removed",
-      "  hooks.Notification removed",
-      "  hooks.Stop         removed",
-      "",
-      "  Any Notification hook you had before :ClaudeSetup is not restored;",
-      "  it is in the backup that :ClaudeSetup made.",
+      "  statusLine and every hook pointing into " .. vim.fs.joinpath(repo_root(), "claude"),
+      "  removed. Hooks of your own are left in place.",
     }, "\n")
   else
     local lines = {}
     if wanted.statusLine then
-      table.insert(lines, "  statusLine         " .. statusline_sh)
+      table.insert(lines, ("  %-25s %s"):format("statusLine", statusline_sh))
     end
-    if wanted.hooks and wanted.hooks.Notification then
-      table.insert(lines, "  hooks.Notification " .. notify_sh .. " attention")
-      table.insert(lines, "  hooks.Stop         " .. notify_sh .. " done")
+    local events = vim.tbl_keys(wanted_hooks())
+    table.sort(events)
+    for _, event in ipairs(events) do
+      for _, command in ipairs(wanted_hooks()[event]) do
+        table.insert(lines, ("  %-25s %s"):format("hooks." .. event, command))
+      end
     end
     preview = table.concat(lines, "\n")
   end

@@ -187,38 +187,64 @@ end
 
 -- ── Progress ──────────────────────────────────────────────────────────
 
--- key -> { percent = n|nil, error = bool, at = ms }. Keys are
--- "msg:<id>" (Progress messages), "lsp:<client>:<token>" and "term:<buf>".
+-- key -> { percent = n|nil, error = bool, paused = bool, ttl = ms|nil,
+-- at = ms }. Keys are "msg:<id>" (Progress messages),
+-- "lsp:<client>:<token>", "term:<buf>" (OSC 9;4 from a terminal buffer) and
+-- "claude:<buf>" (Claude Code's hooks, see M.remote_progress).
+--
+-- ┌─ WHICH ONE THE BAR FOLLOWS ────────────────────────────────────────┐
+-- │ All of them. Ghostty has one bar per surface, and the whole of     │
+-- │ Neovim — every tab, every terminal buffer — is one surface. So the │
+-- │ bar is an aggregate, in this order of precedence:                  │
+-- │                                                                    │
+-- │   anything failed           red                                    │
+-- │   anything running          no % anywhere: indeterminate           │
+-- │                             otherwise: the average                 │
+-- │   everything left paused    paused (Claude waiting on you)         │
+-- │   nothing                   cleared                                │
+-- │                                                                    │
+-- │ :HostTerm lists what is contributing right now.                    │
+-- └────────────────────────────────────────────────────────────────────┘
 local items = {}
 local last_sent = nil
 local heartbeat = nil
 
--- A source that stops talking without saying it finished — a crashed
--- server, a killed TUI — would otherwise leave the bar up forever.
-local STALE_MS = 30000
+-- Only sources that can vanish without saying so get a ttl. A language
+-- server can crash mid-index and never send "end". A terminal buffer can't
+-- vanish unnoticed — TermClose clears it — and a Claude turn can run for
+-- an hour between two tool calls, so neither expires on silence. (An
+-- earlier version expired everything after 30 seconds, which is why the
+-- bar used to give up long before the work did.)
+local LSP_TTL_MS = 120000
 -- Ghostty drops a bar it hasn't heard about for 15 seconds, on the
--- assumption that the program died. A long quiet LSP index is not dead.
+-- assumption that the program died. A long quiet task is not dead.
 local HEARTBEAT_MS = 5000
 
 local function now() return vim.uv.now() end
 
 local function aggregate()
-  local count, sum, unknown, failed = 0, 0, false, false
+  local running, paused, sum, unknown, failed = 0, 0, 0, false, false
   local t = now()
   for key, item in pairs(items) do
-    if t - item.at > STALE_MS then
+    if item.ttl and t - item.at > item.ttl then
       items[key] = nil
+    elseif item.paused then
+      paused = paused + 1
     else
-      count = count + 1
+      running = running + 1
       if item.error then failed = true end
       if item.percent then sum = sum + item.percent else unknown = true end
     end
   end
-  if count == 0 then return "0;0" end
-  -- 2 is error (red), 3 indeterminate, 1 normal.
-  if failed then return ("2;%d"):format(unknown and 100 or math.floor(sum / count)) end
-  if unknown then return "3;0" end
-  return ("1;%d"):format(math.floor(sum / count))
+  -- 1 normal, 2 error (red), 3 indeterminate, 4 paused.
+  if running > 0 then
+    local avg = math.floor(sum / running)
+    if failed then return ("2;%d"):format(unknown and 100 or avg) end
+    if unknown then return "3;0" end
+    return ("1;%d"):format(avg)
+  end
+  if paused > 0 then return "4;0" end
+  return "0;0"
 end
 
 local function flush(force)
@@ -250,6 +276,38 @@ local function update(key, item)
   end)
 end
 
+--- Entry point for claude/progress.sh, run from Claude Code's hooks.
+---
+--- Claude Code does emit OSC 9;4 itself, straight into Ghostty — but not
+--- inside a Neovim terminal buffer, where it sends none at all (observed:
+--- minutes of work, not one sequence). Its hooks fire regardless of what it
+--- thinks the terminal is, so they're the reliable source:
+---
+---   UserPromptSubmit, PostToolUse   "running"   indeterminate
+---   Notification: permission        "waiting"   paused — it's on you
+---   Notification: idle, Stop,
+---   SessionEnd                      "stop"      gone
+---
+--- PostToolUse is what brings a paused bar back once you've approved. The
+--- idle notification is what clears a turn you interrupted, which fires no
+--- Stop. Returns 1 when a terminal buffer was found for `pid`.
+function M.remote_progress(state, pid)
+  if progress_opts.enabled == false or progress_opts.claude == false or not progress_hosts[host] then
+    return 0
+  end
+  local buf = buf_for_pid(tonumber(pid))
+  if not buf then return 0 end
+  local key = "claude:" .. buf
+  if state == "running" then
+    update(key, {})
+  elseif state == "waiting" then
+    update(key, { paused = true })
+  else
+    update(key, nil)
+  end
+  return 1
+end
+
 -- ── Terminal requests ─────────────────────────────────────────────────
 
 local function on_term_request(ev)
@@ -274,6 +332,7 @@ local function on_term_request(ev)
       update("term:" .. buf, {
         percent = state ~= 3 and tonumber(pct) or nil,
         error = state == 2,
+        paused = state == 4,
       })
     end
     return
@@ -307,7 +366,9 @@ vim.api.nvim_create_autocmd("TermClose", {
   group = group,
   callback = function(ev)
     release(ev.buf)
-    if items["term:" .. ev.buf] then update("term:" .. ev.buf, nil) end
+    for _, key in ipairs({ "term:" .. ev.buf, "claude:" .. ev.buf }) do
+      if items[key] then update(key, nil) end
+    end
   end,
 })
 
@@ -346,7 +407,7 @@ if progress_opts.enabled ~= false and progress_hosts[host] then
         if value.kind == "end" then
           update(key, nil)
         else
-          update(key, { percent = value.percentage })
+          update(key, { percent = value.percentage, ttl = LSP_TTL_MS })
         end
       end,
     })
@@ -356,7 +417,15 @@ end
 vim.api.nvim_create_user_command("HostTerm", function()
   local running = {}
   for key, item in pairs(items) do
-    running[#running + 1] = ("  %s  %s"):format(key, item.percent and (item.percent .. "%") or "…")
+    local label = key
+    local buf = tonumber(key:match("^%a+:(%d+)$"))
+    if buf and vim.api.nvim_buf_is_valid(buf) then
+      local title = vim.b[buf].term_title
+      label = ("%s  (%s)"):format(key, title ~= nil and title ~= "" and title or vim.api.nvim_buf_get_name(buf))
+    end
+    local what = item.paused and "paused" or item.error and "failed"
+      or item.percent and (item.percent .. "%") or "…"
+    running[#running + 1] = ("  %-8s %s"):format(what, label)
   end
   table.sort(running)
   vim.notify(table.concat({

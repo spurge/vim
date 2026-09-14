@@ -297,6 +297,7 @@ return {
       enabled = true,   -- one OSC 9;4 bar for everything below
       lsp = true,       -- language servers indexing, loading, building
       terminals = true, -- forward OSC 9;4 from terminal buffers
+      claude = true,    -- Claude Code sessions, from its hooks (:ClaudeSetup)
     },
   },
 
@@ -329,6 +330,8 @@ return {
     enabled = true,     -- the master switch for both halves
     statusline = true,  -- the 5h / 7d segment
     notify = true,      -- banner when a turn ends or needs you
+    progress = true,    -- Ghostty's progress bar while a session inside
+                        -- Neovim works; paused while it waits on you
     interval = 30,      -- seconds between checks; nothing runs on redraw
     stale_after = 1800, -- drop the segment once the data is this old,
                         -- rather than showing a number that has stopped
