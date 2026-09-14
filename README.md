@@ -216,9 +216,44 @@ It sets the light/dark theme pair that starts the theme-following chain in
 one uncommented pair away — both the Nerd Font builds, so the sidebar and
 statusline icons render (`brew install --cask font-mononoki-nerd-font`).
 
+Ghostty has no per-program window icon like iTerm2's, so it hides the
+folder proxy icon and draws the title bar in the Nerd Font, and Neovim puts
+its logo at the front of the title (`iterm.title_icon` in
+`lua/settings.lua`).
+
 Ghostty speaks the kitty keyboard protocol natively, so Shift+Enter in
 Claude Code, `<C-Space>` and `<C-i>` vs `<Tab>` all arrive as themselves
 with no key mappings to maintain.
+
+### Notifications and the progress bar
+
+Programs in a terminal buffer tell *their* terminal things: Claude Code
+sends "needs your permission" (OSC 777) and "working" (OSC 9;4). Inside
+Neovim, Neovim is that terminal and would swallow them, so
+`lua/core/hostterm.lua` passes them on to Ghostty:
+
+- **Notifications** are posted by Ghostty, so clicking one brings the
+  window back. One about a terminal buffer that's on screen in the current
+  tab while Ghostty has focus is dropped — you're already looking at it.
+  `claude/notify.sh` goes the same way when it runs inside Neovim, which
+  gives the Claude hooks the focus detection they can't have on their own.
+- **One progress bar** for everything: Claude Code working, language
+  servers indexing, `vim.pack` installing. Unknown percentages anywhere make
+  it indeterminate; otherwise it's the average.
+
+iTerm2, WezTerm and kitty get what each supports. `hostterm` in
+`lua/settings.lua` has the switches; `:HostTerm` shows what was detected and
+what is running.
+
+### Images
+
+With `images.enabled`, opening a png, jpg, gif, webp or pdf shows the image,
+and markdown renders `![](…)` inline — Ghostty speaks the kitty graphics
+protocol. That's snacks.nvim's image module and nothing else of snacks.
+ImageMagick converts formats (`brew install imagemagick`). LaTeX math
+additionally needs tectonic and a `latex` treesitter parser, Mermaid needs
+`mmdc`; `:checkhealth snacks` lists what's missing.
+Changing the setting takes a restart.
 
 ## iTerm2
 
@@ -308,7 +343,8 @@ Seven plugins, each because there is no native equivalent: nvim-lspconfig
 (**data only** — server specs, never `setup()`), nvim-treesitter,
 oil.nvim, fzf-lua, gitsigns.nvim, conform.nvim, mini.surround. Plus every
 colorscheme in `theme.themes` — those are taste, not machinery, which is
-why they're not in the count.
+why they're not in the count. An eighth, snacks.nvim (its image module
+only), comes with `images.enabled`.
 
 Absent because the core does it: plugin manager, LSP wrapper, completion
 engine, linting framework, statusline, bufferline / tab sidebar, indent
@@ -335,7 +371,7 @@ In-editor: `:Reload` (re-read settings without restarting), `:Tabs`,
 `:ThemesToggle`
 (next colorscheme), `:Theme <name>`,
 `:ThemeToggle` (light/dark), `:FormatInfo`, `:FormatOff[!]`, `:FormatOn`,
-`:Shell`, `:ShellInfo`, `:TermColors`, `:ClaudeSetup[!]`, `:ClaudeUsage`,
+`:Shell`, `:ShellInfo`, `:TermColors`, `:HostTerm`, `:ClaudeSetup[!]`, `:ClaudeUsage`,
 `:checkhealth vim.lsp`.
 
 `theme.themes` in `lua/settings.lua` is an ordered list; `:ThemesToggle`

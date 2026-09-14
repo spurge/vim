@@ -1,6 +1,6 @@
 -- Plugins, via Neovim 0.12's built-in vim.pack.
 --
--- Seven, plus your colorschemes and whatever you list in
+-- Seven (eight with settings.images), plus your colorschemes and whatever you list in
 -- settings.extra_plugins. Each one exists
 -- because there is no native equivalent; the comment says what it replaces.
 --
@@ -31,6 +31,14 @@ local plugins = {
   -- Surround: ys / cs / ds, remapped below to tpope's grammar.
   "https://github.com/echasnovski/mini.surround",
 }
+
+-- Images, when settings.images.enabled. snacks.nvim is a collection, but
+-- only the modules named in its setup() table are switched on — this uses
+-- the image one and nothing else. No native peer: Neovim has no API for
+-- the kitty graphics protocol.
+if config.images.enabled then
+  table.insert(plugins, "https://github.com/folke/snacks.nvim")
+end
 
 -- Every colorscheme in settings.theme.themes, so :ThemesToggle can reach
 -- all of them. They're cheap: a colorscheme is data until it's applied.
@@ -158,3 +166,19 @@ require("mini.surround").setup({
 pcall(vim.keymap.del, "x", "ys")
 vim.keymap.set("x", "S", [[:<C-u>lua MiniSurround.add('visual')<CR>]],
   { silent = true, desc = "surround selection" })
+
+-- ── snacks.image ──────────────────────────────────────────────────────
+-- Opening an image file shows the image; markdown renders `![](…)` inline
+-- (math too, given tectonic and a `latex` parser). `doc.inline` needs a terminal with kitty's Unicode
+-- placeholders (Ghostty, kitty) and quietly falls back to a float under
+-- the cursor elsewhere. Under tmux: `set -g allow-passthrough on`.
+if config.images.enabled then
+  local ok_snacks, snacks = pcall(require, "snacks")
+  if ok_snacks then
+    snacks.setup({
+      image = {
+        doc = { inline = true, float = true, max_width = 80, max_height = 40 },
+      },
+    })
+  end
+end

@@ -20,9 +20,10 @@
 # jq is optional — without it you get a generic body instead of the project
 # name and the hook's own message.
 #
-# No focus detection. Suppressing the banner when the terminal is already
-# frontmost needs Accessibility permission via System Events, which is too
-# much to ask of a config other people clone.
+# Focus detection only inside Neovim, which knows (see below). Outside it,
+# suppressing the banner when the terminal is already frontmost needs
+# Accessibility permission via System Events, which is too much to ask of a
+# config other people clone.
 
 set -u
 
@@ -53,6 +54,22 @@ fi
 
 # Banners are one line. Collapse anything that isn't.
 message=$(printf '%s' "$message" | tr '\n\r\t' '   ')
+
+# Inside a Neovim terminal, hand it to Neovim first (lua/core/hostterm.lua).
+# Neovim posts it through the host terminal — Ghostty, so clicking it brings
+# the window back — and drops it when you are already looking at this
+# session's buffer. $PPID is how it finds that buffer. It answers 1 when it
+# took care of it and 0 when the host can't show notifications, in which
+# case the notifiers below still run.
+if [ -n "${NVIM:-}" ] && command -v nvim >/dev/null 2>&1; then
+  b64() { printf '%s' "$1" | base64 | tr -d '\n'; }
+  nvim_title=$title
+  [ -n "$subtitle" ] && nvim_title="$title — $subtitle"
+  handled=$(nvim --server "$NVIM" --remote-expr \
+    "v:lua.require'core.hostterm'.remote_notify('$(b64 "$nvim_title")','$(b64 "$message")',$PPID)" \
+    2>/dev/null)
+  [ "$handled" = "1" ] && exit 0
+fi
 
 # An AppleScript string literal, with backslashes and quotes escaped.
 as_string() {

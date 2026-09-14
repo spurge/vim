@@ -42,6 +42,7 @@ local purge = {
   "core.sidebar",
   "core.stack",
   "core.iterm",
+  "core.hostterm",
   "core.format",
   -- Not in `load` below: nothing requires it at startup, $EDITOR pulls it
   -- in on demand. It still has to be purged, or an nvim that has run one
@@ -73,6 +74,7 @@ local load = {
   -- stacks the previous incarnation left tagged.
   "core.stack",
   "core.iterm",
+  "core.hostterm",
   "core.format",
   -- Last, and safe to re-run: nvim_create_user_command overwrites :Reload
   -- rather than erroring, and the callback currently executing keeps its

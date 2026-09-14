@@ -1,6 +1,6 @@
 -- A small, hand-rolled Neovim configuration.
 --
--- Seven plugins plus colorschemes, no framework. Requires Neovim 0.12+
+-- Seven plugins plus colorschemes (eight with images), no framework. Requires Neovim 0.12+
 -- for vim.pack (the
 -- built-in plugin manager) and native lsp/ directory discovery.
 --
@@ -35,4 +35,5 @@ require("core.statusline")  -- native statusline
 require("core.tabs")        -- tabline / stacked sidebar, one model both ways
 require("core.stack")       -- i3-style stacked windows inside one tab
 require("core.iterm")       -- one-way nvim -> iTerm2 title / tab colour
+require("core.hostterm")    -- notifications + progress bar via the host terminal
 require("core.reload")      -- :Reload, for settings changes without a restart

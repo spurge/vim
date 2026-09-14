@@ -62,10 +62,18 @@ local defaults = {
   iterm = {
     enabled = true,
     title = true,
+    title_icon = "",
     user_vars = true,
     tab_color = true,
     colors = { modified = "b58900", error = "cc241d" },
     interval = 250,
+  },
+  hostterm = {
+    notify = { enabled = true, when = "unfocused", terminals = true },
+    progress = { enabled = true, lsp = true, terminals = true },
+  },
+  images = {
+    enabled = false,
   },
   claude = {
     enabled = true,

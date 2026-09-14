@@ -109,6 +109,9 @@ local function snapshot()
   snap.title = count > 1
     and ("%s — nvim %d/%d"):format(name, index, count)
     or ("%s — nvim"):format(name)
+  if opts.title_icon and opts.title_icon ~= "" then
+    snap.title = opts.title_icon .. " " .. snap.title
+  end
   snap.color = (errors > 0 and opts.colors.error)
     or (modified and opts.colors.modified)
     or "default"

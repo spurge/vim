@@ -14,6 +14,12 @@
 # A misspelt name is silently ignored — `ghostty +list-themes` for the list.
 theme = light:Gruvbox Light,dark:Gruvbox Dark Hard
 
+# ── Title bar ────────────────────────────────────────────────────────────
+# The folder in the title bar is macOS's proxy icon for the working
+# directory — Ghostty has no per-program icon like iTerm2's. Hidden, and
+# Neovim puts its own logo in the title text instead (see the font below).
+macos-titlebar-proxy-icon = hidden
+
 # ── Font ─────────────────────────────────────────────────────────────────
 # The Nerd Font build, for the icons in the sidebar, statusline and
 # fzf-lua. The proportional "Nerd Font" rather than "Nerd Font Mono": the
@@ -34,6 +40,12 @@ font-size = 14
 # cramped with it.
 # font-family = FantasqueSansM Nerd Font
 # font-size = 15
+
+# The title bar and tabs are drawn in the macOS system font unless told
+# otherwise, and that has no Nerd Font glyphs — so the Neovim logo that
+# lua/settings.lua puts in front of the title (iterm.title_icon) would be
+# a blank box. Keep this in step with font-family above.
+window-title-font-family = Mononoki Nerd Font
 
 # Both fonts ship a few ligatures (`->`, `<=`, `==` …) in their default
 # contextual alternates. Uncomment to draw every character on its own.

@@ -265,11 +265,50 @@ return {
   iterm = {
     enabled = true,
     title = true,      -- 'titlestring' from the tab model
+    -- Prefixed to that title. Ghostty has no per-program window icon the
+    -- way iTerm2 does, so this is the stand-in: the Nerd Font Neovim logo
+    -- (nf-custom-neovim). It needs the title bar drawn in a Nerd Font —
+    -- ghostty/config.ghostty sets window-title-font-family for exactly
+    -- this. "" for none; iTerm2's own title font would show a blank box.
+    title_icon = "\u{e6ae}",
     user_vars = true,  -- OSC 1337 SetUserVar. Read them on the iTerm2 side as
                        -- \(user.nvim_tab) in a tab title, badge or status bar
     tab_color = true,  -- tint the native tab: amber unsaved, red on errors
     colors = { modified = "b58900", error = "cc241d" },
     interval = 250,    -- ms; nothing here ever runs at redraw time
+  },
+
+  -- ── Host terminal ───────────────────────────────────────────────────
+  -- Desktop notifications and the native progress bar of the terminal
+  -- Neovim runs in (Ghostty; iTerm2, WezTerm and kitty get what they
+  -- support). A TUI inside a :terminal buffer — Claude Code, say — sends
+  -- these to Neovim, which would otherwise swallow them; they're passed on.
+  -- :HostTerm shows what was detected and what's running.
+  hostterm = {
+    notify = {
+      enabled = true,
+      -- "unfocused": drop a notification about a terminal buffer that is on
+      -- screen in the current tab while the terminal window has focus —
+      -- you're already looking at it. "always": never drop one.
+      when = "unfocused",
+      terminals = true, -- forward OSC 9 / 777 from terminal buffers
+    },
+    progress = {
+      enabled = true,   -- one OSC 9;4 bar for everything below
+      lsp = true,       -- language servers indexing, loading, building
+      terminals = true, -- forward OSC 9;4 from terminal buffers
+    },
+  },
+
+  -- ── Images ──────────────────────────────────────────────────────────
+  -- Images in the buffer via the kitty graphics protocol (Ghostty, kitty;
+  -- WezTerm partly): opening a png/jpg/pdf shows it, and markdown shows
+  -- `![](…)` inline. Adds snacks.nvim, image module only. ImageMagick
+  -- converts formats; LaTeX math also wants tectonic plus a `latex`
+  -- treesitter parser. Takes a restart, not :Reload. `:checkhealth snacks`
+  -- if nothing appears.
+  images = {
+    enabled = true,
   },
 
   -- ── Claude Code ─────────────────────────────────────────────────────
