@@ -1,0 +1,40 @@
+# Ghostty — the terminal this Neovim config is tuned for.
+#
+# Installed by `make ghostty`, which links this file to
+# ~/.config/ghostty/config.ghostty. Reload a running Ghostty with
+# Cmd+Shift+, — font changes apply to open windows too.
+#
+# `ghostty +show-config --default --docs` lists every option with its docs.
+
+# ── Theme ────────────────────────────────────────────────────────────────
+# Follows the macOS appearance, sunrise/sunset schedule included. This is
+# the first link of the chain in lua/core/theme.lua: Ghostty swaps palette,
+# tells Neovim (mode 2031 + OSC 11), Neovim flips 'background'.
+#
+# A misspelt name is silently ignored — `ghostty +list-themes` for the list.
+theme = light:Gruvbox Light,dark:Gruvbox Dark Hard
+
+# ── Font ─────────────────────────────────────────────────────────────────
+# The Nerd Font build, for the icons in the sidebar, statusline and
+# fzf-lua. The proportional "Nerd Font" rather than "Nerd Font Mono": the
+# Mono build squeezes every icon into one cell until it's unreadable,
+# while Ghostty lets an icon overflow into the next cell, which is what
+# the icons are drawn for.
+#
+#   brew install --cask font-mononoki-nerd-font
+#   brew install --cask font-fantasque-sans-mono-nerd-font
+#
+# `ghostty +list-fonts | grep -i <name>` to check the exact family name.
+# Swap the pairs below to switch; the size goes with the font.
+font-family = Mononoki Nerd Font
+font-size = 14
+
+# Fantasque has a small x-height, so it reads a size or two smaller than
+# most monospace fonts at the same point size — 13 (Ghostty's default) is
+# cramped with it.
+# font-family = FantasqueSansM Nerd Font
+# font-size = 15
+
+# Both fonts ship a few ligatures (`->`, `<=`, `==` …) in their default
+# contextual alternates. Uncomment to draw every character on its own.
+# font-feature = -calt

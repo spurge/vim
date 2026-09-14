@@ -202,6 +202,24 @@ rather than telling you the sidebar isn't a file window. When it does refuse,
 it names the actual reason — a quickfix or help window can't be a member, and
 a lone window has no column to stack.
 
+## Ghostty
+
+The terminal this config is tuned for, and its config lives here too:
+**`ghostty/config.ghostty`**, installed with
+
+```sh
+make ghostty   # links ~/.config/ghostty/config.ghostty (backs up what's there)
+```
+
+It sets the light/dark theme pair that starts the theme-following chain in
+`lua/core/theme.lua`, and Mononoki as the font, with Fantasque Sans Mono
+one uncommented pair away — both the Nerd Font builds, so the sidebar and
+statusline icons render (`brew install --cask font-mononoki-nerd-font`).
+
+Ghostty speaks the kitty keyboard protocol natively, so Shift+Enter in
+Claude Code, `<C-Space>` and `<C-i>` vs `<Tab>` all arrive as themselves
+with no key mappings to maintain.
+
 ## iTerm2
 
 `titlestring` is set from the tab model in every terminal, so the terminal's

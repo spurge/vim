@@ -11,7 +11,7 @@ MISE := $(shell command -v mise 2>/dev/null)
 NVIM := $(shell command -v nvim 2>/dev/null)
 
 .DEFAULT_GOAL := help
-.PHONY: help verify try link shell-integration install update pin health lsp lint fmt clean
+.PHONY: help verify try link shell-integration ghostty install update pin health lsp lint fmt clean
 
 help:
 	@printf '\n  \033[1mNeovim configuration\033[0m\n'
@@ -21,7 +21,8 @@ help:
 	@printf '    make install            install them (needs mise)\n'
 	@printf '    make try                launch sandboxed via NVIM_APPNAME\n'
 	@printf '    make link               install as ~/.config/nvim\n'
-	@printf '    make shell-integration  fish/zsh/bash $$NVIM handling\n\n'
+	@printf '    make shell-integration  fish/zsh/bash $$NVIM handling\n'
+	@printf '    make ghostty            install ghostty/config.ghostty\n\n'
 	@printf '  \033[1mmaintenance\033[0m\n'
 	@printf '    make update             update plugins + lockfile\n'
 	@printf '    make pin                roll plugins back to the lockfile\n'
@@ -77,6 +78,30 @@ shell-integration:
 	@printf "    echo 'source %s/shell/nvim.sh' >> ~/.zshrc\n\n" "$(CURDIR)"
 	@printf 'Both make $$EDITOR open files in the parent Neovim instead of\n'
 	@printf 'nesting a new one. See the shell section of the README.\n\n'
+
+# Ghostty reads ~/.config/ghostty first and then the macOS Application
+# Support directory, and the LATER file wins — so a config left there would
+# quietly override everything linked here. It gets moved aside, not deleted.
+GHOSTTY_MACOS := $(HOME)/Library/Application Support/com.mitchellh.ghostty
+
+ghostty:
+	@target="$(HOME)/.config/ghostty/config.ghostty"; \
+	if [ -L "$$target" ]; then rm "$$target"; \
+	elif [ -e "$$target" ]; then \
+	  backup="$$target.bak.$$(date +%Y%m%d%H%M%S)"; \
+	  printf 'moving %s -> %s\n' "$$target" "$$backup"; mv "$$target" "$$backup"; \
+	fi; \
+	for f in "$(GHOSTTY_MACOS)/config.ghostty" "$(GHOSTTY_MACOS)/config"; do \
+	  if [ -e "$$f" ]; then \
+	    backup="$$f.bak.$$(date +%Y%m%d%H%M%S)"; \
+	    printf 'moving %s -> %s (it would override this one)\n' "$$f" "$$backup"; \
+	    mv "$$f" "$$backup"; \
+	  fi; \
+	done; \
+	mkdir -p "$(HOME)/.config/ghostty"; \
+	ln -sfn "$(CURDIR)/ghostty/config.ghostty" "$$target"; \
+	printf '%s -> %s\n' "$$target" "$(CURDIR)/ghostty/config.ghostty"; \
+	printf 'Reload Ghostty with Cmd+Shift+,\n'
 
 install update pin health lsp lint fmt clean: guard-mise
 	@mise run $@
