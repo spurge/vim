@@ -12,7 +12,7 @@
 # tells Neovim (mode 2031 + OSC 11), Neovim flips 'background'.
 #
 # A misspelt name is silently ignored — `ghostty +list-themes` for the list.
-theme = light:Gruvbox Light,dark:Gruvbox Dark Hard
+theme = light:Gruvbox Light Hard,dark:Gruvbox Dark Hard
 
 # ── Title bar ────────────────────────────────────────────────────────────
 # The folder in the title bar is macOS's proxy icon for the working

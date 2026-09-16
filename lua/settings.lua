@@ -340,7 +340,7 @@ return {
 
   -- ── Behaviour ───────────────────────────────────────────────────────
   format_on_save = true,
-  spell = { "en_us" }, -- add your own, e.g. { "en_us", "sv", "de" }
+  spell = { "en_us", "sv" }, -- add your own, e.g. { "en_us", "sv", "de" }
 
   -- ── Extra plugins ───────────────────────────────────────────────────
   -- Added to vim.pack alongside the built-in nine. Configure them in
