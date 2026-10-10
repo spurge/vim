@@ -1,8 +1,9 @@
 -- Plugins, via Neovim 0.12's built-in vim.pack.
 --
--- Seven (eight with settings.images), plus your colorschemes and whatever you list in
--- settings.extra_plugins. Each one exists
--- because there is no native equivalent; the comment says what it replaces.
+-- Seven (more with settings.images / settings.render_markdown), plus your
+-- colorschemes and whatever you list in settings.extra_plugins. Each one
+-- exists because there is no native equivalent; the comment says what it
+-- replaces.
 --
 -- vim.pack writes a lockfile — commit it. Update with :lua vim.pack.update()
 
@@ -38,6 +39,13 @@ local plugins = {
 -- the kitty graphics protocol.
 if config.images.enabled then
   table.insert(plugins, "https://github.com/folke/snacks.nvim")
+end
+
+-- Rendered markdown, when settings.render_markdown.enabled. No native
+-- peer: treesitter highlights markdown but can't draw a table's borders
+-- or line its columns up.
+if config.render_markdown.enabled then
+  table.insert(plugins, "https://github.com/MeanderingProgrammer/render-markdown.nvim")
 end
 
 -- Every colorscheme in settings.theme.themes, so :ThemesToggle can reach
@@ -179,6 +187,25 @@ if config.images.enabled then
       image = {
         doc = { inline = true, float = true, max_width = 80, max_height = 40 },
       },
+    })
+  end
+end
+
+-- ── render-markdown ───────────────────────────────────────────────────
+-- Extmarks over the buffer, never edits to it. Raw view is the literal
+-- source, conceallevel 0 — not the 2 after/ftplugin uses without this
+-- plugin, which would hide link targets and emphasis markers in the very
+-- view meant to show them. <Leader>M (keymaps.lua) toggles every markdown
+-- buffer at once.
+if config.render_markdown.enabled then
+  local ok_rm, rm = pcall(require, "render-markdown")
+  if ok_rm then
+    rm.setup({
+      enabled = config.render_markdown.on_open,
+      -- snacks.image already renders math as an image; two renderers on
+      -- the same formula fight over it.
+      latex = { enabled = not config.images.enabled },
+      win_options = { conceallevel = { default = 0 } },
     })
   end
 end

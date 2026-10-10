@@ -113,6 +113,22 @@ map("n", "<Leader>q", "<Cmd>copen<CR>", { desc = "quickfix open" })
 map("n", "<Leader>Q", "<Cmd>cclose<CR>", { desc = "quickfix close" })
 -- ]q [q ]l [l ]d [d are native in 0.11+; ]c [c come from gitsigns
 
+-- ── Markdown ──────────────────────────────────────────────────────────
+-- Rendered <-> raw, for every markdown buffer. Only with render_markdown.
+-- A function, not <Cmd>RenderMarkdown: enabling it and running :Reload
+-- maps this before any restart has loaded the plugin, and E492 doesn't
+-- say why.
+if require("core.config").render_markdown.enabled then
+  map("n", "<Leader>M", function()
+    local ok, rm = pcall(require, "render-markdown")
+    if ok then
+      rm.toggle()
+    else
+      vim.notify("render-markdown not loaded — restart to pick it up", vim.log.levels.WARN)
+    end
+  end, { desc = "markdown: rendered / raw" })
+end
+
 -- ── Small comforts ────────────────────────────────────────────────────
 map("n", "<Esc>", "<Cmd>nohlsearch<CR>", { desc = "clear search highlight" })
 map("n", "<Leader>w", "<Cmd>write<CR>", { desc = "write" })

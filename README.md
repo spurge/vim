@@ -89,6 +89,7 @@ copy, one way to paste, nothing to configure. Deletes go through it too —
 | `<C-w>H/J/K/L`      | move window to far left/bottom/top/right  |
 | `,zz` `,za` `,zx`   | stack: toggle column / add / remove       |
 | `,zj` `,zk`         | stack: next / prev member (wraps)         |
+| `,M`                | markdown: rendered ⇄ raw (render_markdown)|
 
 ### LSP
 
@@ -264,6 +265,16 @@ additionally needs tectonic and a `latex` treesitter parser, Mermaid needs
 `mmdc`; `:checkhealth snacks` lists what's missing.
 Changing the setting takes a restart.
 
+### Rendered markdown
+
+With `render_markdown.enabled`, markdown buffers are drawn rendered: tables
+with borders and aligned columns, styled headings, code blocks, lists,
+checkboxes and callouts. It's extmarks over the text, so the file is never
+changed, and the line under the cursor shows its raw source for editing.
+`<Leader>M` flips every markdown buffer between rendered and raw;
+`render_markdown.on_open = false` opens them raw. That's
+render-markdown.nvim. Changing the setting takes a restart.
+
 ## iTerm2
 
 `titlestring` is set from the tab model in every terminal, so the terminal's
@@ -354,8 +365,8 @@ Seven plugins, each because there is no native equivalent: nvim-lspconfig
 (**data only** — server specs, never `setup()`), nvim-treesitter,
 oil.nvim, fzf-lua, gitsigns.nvim, conform.nvim, mini.surround. Plus every
 colorscheme in `theme.themes` — those are taste, not machinery, which is
-why they're not in the count. An eighth, snacks.nvim (its image module
-only), comes with `images.enabled`.
+why they're not in the count. snacks.nvim (its image module only) comes
+with `images.enabled`, render-markdown.nvim with `render_markdown.enabled`.
 
 Absent because the core does it: plugin manager, LSP wrapper, completion
 engine, linting framework, statusline, bufferline / tab sidebar, indent

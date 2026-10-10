@@ -1,8 +1,8 @@
 -- A small, hand-rolled Neovim configuration.
 --
--- Seven plugins plus colorschemes (eight with images), no framework. Requires Neovim 0.12+
--- for vim.pack (the
--- built-in plugin manager) and native lsp/ directory discovery.
+-- Seven plugins plus colorschemes (more with images / rendered markdown),
+-- no framework. Requires Neovim 0.12+ for vim.pack (the built-in plugin
+-- manager) and native lsp/ directory discovery.
 --
 -- ┌────────────────────────────────────────────────────────────────────┐
 -- │  Everything you'd want to change lives in lua/settings.lua.        │

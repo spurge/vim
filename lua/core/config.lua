@@ -75,6 +75,10 @@ local defaults = {
   images = {
     enabled = false,
   },
+  render_markdown = {
+    enabled = false,
+    on_open = true,
+  },
   claude = {
     enabled = true,
     statusline = true,

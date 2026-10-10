@@ -312,6 +312,19 @@ return {
     enabled = true,
   },
 
+  -- ── Rendered markdown ───────────────────────────────────────────────
+  -- Markdown drawn in the buffer: tables get box-drawn borders and aligned
+  -- columns, headings, code blocks, lists, checkboxes and callouts get
+  -- styled. The file itself is untouched — it's decoration over the text,
+  -- and the line under the cursor always shows the raw source so editing
+  -- works as usual. <Leader>M flips between rendered and raw, for every
+  -- markdown buffer at once. Adds render-markdown.nvim. Takes a restart,
+  -- not :Reload.
+  render_markdown = {
+    enabled = true,
+    on_open = true, -- false: open raw, <Leader>M to render
+  },
+
   -- ── Claude Code ─────────────────────────────────────────────────────
   -- Rate limits in the statusline, and a desktop notification when Claude
   -- finishes or wants something. Nothing here needs an API key: both
