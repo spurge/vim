@@ -202,7 +202,7 @@ return {
     --
     -- Toggle between the first two at any time with <Leader>B, or pick
     -- one with :Tabs tabline. Both are clickable with the mouse.
-    display = "sidebar",
+    display = "tabline",
 
     width = 32, -- sidebar only
 

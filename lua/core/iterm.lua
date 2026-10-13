@@ -94,7 +94,7 @@ local function snapshot()
   local name, index = "nvim", 0
   if current then
     index = current.index
-    name = current.custom or current.cwd or current.name
+    name = tabs.custom_name(current) or current.cwd or current.name
   end
 
   local snap = {
@@ -156,10 +156,15 @@ end
 --- Called from core.tabs' coalescer, once per tick at most. The timer
 --- collapses a run of those ticks into one, and then only ARMS the write —
 --- SafeState below is what actually performs it.
+---
+--- A throttle, not a debounce: a ticking timer is left alone rather than
+--- restarted. A terminal that retitles itself more often than the interval
+--- — a spinner — would otherwise keep pushing the write back for as long
+--- as it runs. flush() snapshots when it fires, so nothing is lost.
 function M.sync()
   if not opts.enabled then return end
   timer = timer or vim.uv.new_timer()
-  timer:stop()
+  if timer:is_active() then return end
   timer:start(opts.interval, 0, vim.schedule_wrap(function()
     armed = true
   end))

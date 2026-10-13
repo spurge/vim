@@ -97,18 +97,43 @@ local function normal_win()
   return nil
 end
 
+-- A tabpage of nothing but terminals has no such window, and the terminal
+-- would get line numbers and a sign column it was set up without. Use a
+-- hidden window on a scratch buffer then: the global values still land,
+-- which is what new windows copy, and nothing visible is touched.
+local function scratch_win()
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.bo[buf].bufhidden = "wipe"
+  return vim.api.nvim_open_win(buf, false, {
+    relative = "editor", row = 0, col = 0, width = 1, height = 1,
+    hide = true, noautocmd = true,
+  })
+end
+
 -- Only core.options gets that treatment: core.tabs and core.sidebar do their
 -- own window juggling, and running them under nvim_win_call would change what
 -- they think the current window is.
 local function load_module(name)
-  local win = name == "core.options" and normal_win() or nil
-  return xpcall(function()
+  local win, scratch
+  if name == "core.options" then
+    win = normal_win()
+    if not win then
+      win = scratch_win()
+      scratch = win
+    end
+  end
+  local ok, err = xpcall(function()
     if win then
       vim.api.nvim_win_call(win, function() require(name) end)
     else
       require(name)
     end
   end, debug.traceback)
+  if scratch then
+    -- bufhidden=wipe: the buffer goes with the window.
+    pcall(vim.api.nvim_win_close, scratch, true)
+  end
+  return ok, err
 end
 
 vim.api.nvim_create_user_command("Reload", function()

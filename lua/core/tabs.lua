@@ -80,6 +80,37 @@ local function tabname(tab)
   if ok and type(name) == "string" and name ~= "" then return name end
 end
 
+-- charclass() of a symbol, an emoji and a braille spinner frame. Letters
+-- are 2 and CJK has classes of its own, so 'λ repl' or '日本 docs' is a
+-- title that starts with a word, not a glyph.
+local symbol = { [1] = true, [3] = true, [0x2800] = true }
+
+-- The glyph a program puts in front of its terminal title to say what it's
+-- doing: Claude Code's ◐/◑ while it works, ✳ once it's idle. Only one
+-- non-ASCII symbol followed by a space counts, so a title that is just a
+-- path or a command never qualifies.
+local function glyph(buf)
+  local title = vim.b[buf].term_title
+  if type(title) ~= "string" then return nil end
+  local g = title:match("^(%S+) ")
+  if not g or g:byte(1) < 0xC2 then return nil end
+  -- Give or take the variation selector (U+FE0E/F) that picks its text or
+  -- emoji form.
+  local base = (g:gsub("\239\184[\142\143]$", ""))
+  if vim.fn.strchars(base) ~= 1 or not symbol[vim.fn.charclass(base)] then return nil end
+  -- b:term_title outlives the job. A terminal kept open because it exited
+  -- non-zero would otherwise go on claiming whatever it last said.
+  if vim.fn.jobwait({ vim.bo[buf].channel }, 0)[1] ~= -1 then return nil end
+  return g
+end
+
+--- What a tab is called when the user named it: the name, with the
+--- activity glyph of a terminal inside it put back in front.
+function M.custom_name(t)
+  if not t.custom then return nil end
+  return t.icon and (t.icon .. " " .. t.custom) or t.custom
+end
+
 function M.dir(buf)
   local name = vim.api.nvim_buf_get_name(buf)
   if name == "" or vim.bo[buf].buftype ~= "" then return "" end
@@ -133,6 +164,31 @@ end
 -- from the list entirely, which is the opposite of what a buffer list is
 -- for.
 local owner = {}
+
+-- A name you gave the tab replaces the terminal title it would otherwise
+-- show, and the glyph goes with it. So find one among the tab's terminals:
+-- the window you were last in first, then its other windows, then the ones
+-- it owns but isn't showing — you swapped a file into Claude's window and
+-- Claude kept working, which is exactly when you want to know.
+local function activity(tab)
+  local shown, found = {}, nil
+  local active = vim.api.nvim_tabpage_get_win(tab)
+  for _, w in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+    local buf = vim.api.nvim_win_get_buf(w)
+    shown[buf] = true
+    local g = vim.bo[buf].buftype == "terminal" and glyph(buf)
+    if g and w == active then return g end
+    found = found or g or nil
+  end
+  if found then return found end
+  for buf, home in pairs(owner) do
+    if home == tab and not shown[buf] and vim.api.nvim_buf_is_valid(buf)
+      and vim.bo[buf].buftype == "terminal" then
+      local g = glyph(buf)
+      if g then return g end
+    end
+  end
+end
 
 local function entry(buf, win, cur_buf)
   return {
@@ -206,6 +262,7 @@ function M.tree()
     -- Kept apart from t.name: the derived label is still what the views
     -- fall back to, and what collision detection compares.
     t.custom = tabname(t.handle)
+    t.icon = t.custom and activity(t.handle)
     t.status = aggregate(t.buffers)
     -- Only when :tcd gave the tab its own directory. The sidebar titles
     -- groups with it, which is the whole point of a per-tab cwd.
@@ -301,7 +358,7 @@ local function build(tabs, opts)
 
   for _, t in ipairs(tabs) do
     if t.handle then
-      local name = t.custom or t.name
+      local name = M.custom_name(t) or t.name
       local bits = { tostring(t.index), M.truncate(name, opts.name_width or 999) }
       -- A named tab is already unambiguous; the directory would only cost
       -- width to repeat what the name says.
@@ -542,6 +599,32 @@ vim.api.nvim_create_autocmd({
   callback = function() M.refresh() end,
 })
 
+-- A terminal setting its title (OSC 0 or 2) is how a renamed tab's glyph
+-- changes, and an unnamed one's whole label. Shells re-send the same title
+-- at every prompt, so only an actual change is worth a redraw.
+local titles = {}
+
+vim.api.nvim_create_autocmd("TermRequest", {
+  group = group,
+  callback = function(ev)
+    local seq = ev.data and ev.data.sequence
+    if type(seq) ~= "string" then return end
+    local title = seq:match("^\27%][02];(.*)$")
+    if title and title ~= titles[ev.buf] then
+      titles[ev.buf] = title
+      -- Scheduled: b:term_title may not be updated yet.
+      vim.schedule(M.refresh)
+    end
+  end,
+})
+
+-- An exited job's glyph stops counting (see glyph()), but nothing else
+-- would redraw to show it.
+vim.api.nvim_create_autocmd("TermClose", {
+  group = group,
+  callback = function() vim.schedule(M.refresh) end,
+})
+
 vim.api.nvim_create_autocmd("User", {
   pattern = "GitSignsUpdate",
   group = group,
@@ -562,7 +645,10 @@ vim.api.nvim_create_autocmd("BufEnter", {
 
 vim.api.nvim_create_autocmd("BufDelete", {
   group = group,
-  callback = function(ev) owner[ev.buf] = nil end,
+  callback = function(ev)
+    owner[ev.buf] = nil
+    titles[ev.buf] = nil
+  end,
 })
 
 -- A closed tabpage leaves every buffer it owned pointing at a dead handle,

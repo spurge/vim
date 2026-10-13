@@ -361,7 +361,7 @@ local function draw()
     if not t.handle then
       head = t.name
     elseif t.custom then
-      head = ("%d  %s"):format(t.index, t.custom)
+      head = ("%d  %s"):format(t.index, tabs().custom_name(t))
     elseif open then
       head = ("Tab %d%s"):format(t.index, t.cwd and ("  " .. t.cwd) or "")
     else
